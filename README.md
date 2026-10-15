@@ -36,7 +36,7 @@
 
 ### 🍳 For Chefs & Kitchen Managers (Admin)
 - **Daily Kitchen Prep Board (Kanban Pipeline)**: Real-time visual tracking of orders through 6 progressive stages:
-  $$\text{REQUESTED} \longrightarrow \text{CONFIRMED} \longrightarrow \text{PREPARING} \longrightarrow \text{READY} \longrightarrow \text{COMPLETED} \quad (\text{or } \text{CANCELLED})$$
+  `REQUESTED` ➔ `CONFIRMED` ➔ `PREPARING` ➔ `READY` ➔ `COMPLETED` *(or `CANCELLED`)*
 - **1-Click Stage Transitions**: Advance order tickets with a single click as dishes move into the oven, to packaging, and to the pickup counter.
 - **Kitchen Throughput Analytics**: Live metrics tracking today's gross revenue, active in-oven prep batches, window-ready orders, and fulfillment breakdown.
 - **Menu Catalog Management**: Add signature dishes, adjust prices, edit descriptions, upload food imagery, and instantly toggle between **"Available"** and **"Sold Out"** to prevent kitchen overbooking.
@@ -59,12 +59,12 @@ flowchart TD
     subgraph Client["Frontend Client (Vue 3 + Vite)"]
         UI["Vue Components & Pages"]
         Pinia["Pinia Stores (Auth, Cart, Orders, Menu)"]
-        Router["Vue Router (Guards & Dynamic Layouts)"]
-        APIClient["API Service Layer (Fetch + Fallback)"]
-        LocalData["LocalStorage + Mock Fallback Data"]
+        Router["Vue Router (Guards & Layouts)"]
+        APIClient["API Service Layer"]
+        LocalData["LocalStorage & Mock Data"]
         UI --> Pinia
         Pinia --> APIClient
-        APIClient -.->|If Offline / Standalone| LocalData
+        APIClient -.->|"Offline Fallback"| LocalData
     end
 
     subgraph Server["Backend Server (Node.js + Express)"]
@@ -80,11 +80,11 @@ flowchart TD
     end
 
     subgraph Database["Database (PostgreSQL)"]
-        NeonDB[("Neon Serverless PostgreSQL\n• Users & Roles\n• Menu Catalog\n• Orders & Historical Snapshots")]
-        PrismaClient -->|Connection Pool / SSL| NeonDB
+        NeonDB[("Neon Serverless PostgreSQL")]
+        PrismaClient -->|"Connection Pool & SSL"| NeonDB
     end
 
-    APIClient -->|HTTP / REST JSON (Proxy /api)| Express
+    APIClient -->|"REST API Requests"| Express
 ```
 
 ---
