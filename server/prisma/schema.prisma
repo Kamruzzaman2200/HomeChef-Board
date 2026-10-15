@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  REQUESTED
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum FulfillType {
+  PICKUP
+  DELIVERY
+}
+
+model User {
+  id           String      @id @default(uuid())
+  name         String
+  email        String      @unique
+  phone        String?
+  passwordHash String
+  role         Role        @default(CUSTOMER)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @default(now()) @updatedAt
+
+  orders       Order[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model MenuItem {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  category    String
+  price       Decimal     @db.Decimal(10, 2)
+  image       String?
+  available   Boolean     @default(true)
+  isArchived  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  orderItems  OrderItem[]
+
+  @@index([category])
+  @@index([available])
+  @@index([isArchived])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  orderDate   DateTime    @default(now())
+  fulfillDate DateTime?   @default(now())
+  fulfillTime String      // e.g. "12:30 PM", "18:00"
+  fulfillType FulfillType @default(PICKUP)
+  addressNote String?     // Pickup contact or delivery destination notes
+  status      OrderStatus @default(REQUESTED)
+  total       Decimal     @db.Decimal(10, 2)
+  notes       String?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderDate])
+  @@index([fulfillDate])
+}
+
+model OrderItem {
+  id               String    @id @default(uuid())
+  orderId          String
+  order            Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  menuItemId       String?
+  menuItem         MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+  
+  // Historical snapshot to guarantee fidelity if menu item is updated or removed
+  itemNameSnapshot String
+  quantity         Int
+  unitPrice        Decimal   @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([menuItemId])
+}

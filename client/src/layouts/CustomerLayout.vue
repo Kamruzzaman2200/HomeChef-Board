@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import Navbar from '@/components/layout/Navbar.vue';
+import Footer from '@/components/layout/Footer.vue';
+</script>
+
+<template>
+  <div class="min-h-screen flex flex-col bg-cream-100">
+    <Navbar />
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+      <slot />
+    </main>
+    <Footer />
+  </div>
+</template>

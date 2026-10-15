@@ -1,18 +1,23 @@
 {
-  "name": "northloom-site",
+  "name": "homechef-board",
+  "version": "1.0.0",
   "private": true,
-  "type": "module",
+  "description": "HomeChef Board - Kitchen Order Preparation Management System",
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
-    "dev": "nuxt dev",
-    "build": "nuxt build",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "start": "node .output/server/index.mjs"
+    "dev:client": "npm --prefix client run dev",
+    "dev:server": "npm --prefix server run dev",
+    "build:client": "npm --prefix client run build",
+    "build:server": "npm --prefix server run build",
+    "install:all": "npm install && npm --prefix client install && npm --prefix server install",
+    "prisma:generate": "npm --prefix server run prisma:generate",
+    "prisma:migrate": "npm --prefix server run prisma:migrate",
+    "prisma:deploy": "npm --prefix server run prisma:deploy",
+    "prisma:studio": "npm --prefix server run prisma:studio",
+    "seed": "npm --prefix server run seed"
   },
-  "dependencies": {
-    "nodemailer": "^6.9.15",
-    "nuxt": "^3.13.2",
-    "vue": "^3.5.12",
-    "vue-router": "^4.4.5"
-  }
+  "keywords": ["home-chef", "kitchen-management", "vue3", "express", "prisma", "neon-postgres"]
 }

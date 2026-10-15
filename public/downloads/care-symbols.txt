@@ -1,3 +1,0 @@
-Northloom Group — care-symbols
-
-Placeholder download. Replace this file in /public/downloads with your real PDF and update data/site.ts.
