@@ -22,6 +22,7 @@ const menuStore = useMenuStore();
 
 const search = ref('');
 const selectedCategory = ref('All');
+const imageErrors = ref<Record<string, boolean>>({});
 
 // Modal State
 const isModalOpen = ref(false);
@@ -192,10 +193,11 @@ async function handleDelete(id: string) {
               <td class="py-3 px-4">
                 <div class="flex items-center gap-3">
                   <img
-                    v-if="item.image"
+                    v-if="item.image && !imageErrors[item.id]"
                     :src="item.image"
                     :alt="item.name"
                     class="w-10 h-10 rounded-lg object-cover border border-stone-200 shrink-0"
+                    @error="imageErrors[item.id] = true"
                   />
                   <div
                     v-else

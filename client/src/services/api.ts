@@ -8,11 +8,42 @@ const STORAGE_KEYS = {
   USER: 'homechef_current_user',
 };
 
+// Auto-sanitize menu items to heal any stale broken image links in localStorage
+function sanitizeMenu(items: MenuItem[]): MenuItem[] {
+  let changed = false;
+  const sanitized = items.map((item) => {
+    if (item.image && item.image.includes('photo-1592417817098-8f3d6910985c')) {
+      changed = true;
+      return {
+        ...item,
+        image: 'https://images.unsplash.com/photo-1506280754576-f6fa8a873550?auto=format&fit=crop&w=600&q=80',
+      };
+    }
+    return item;
+  });
+  if (changed && typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(sanitized));
+    } catch {
+      // ignore
+    }
+  }
+  return sanitized;
+}
+
 // Initialize localStorage with mock data if not already present
 function initLocalStorage() {
   if (typeof window === 'undefined') return;
-  if (!localStorage.getItem(STORAGE_KEYS.MENU)) {
+  const storedMenu = localStorage.getItem(STORAGE_KEYS.MENU);
+  if (!storedMenu) {
     localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(mockMenuItems));
+  } else {
+    try {
+      const parsed = JSON.parse(storedMenu);
+      sanitizeMenu(parsed);
+    } catch {
+      localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(mockMenuItems));
+    }
   }
   if (!localStorage.getItem(STORAGE_KEYS.ORDERS)) {
     localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(mockOrders));
@@ -36,9 +67,9 @@ function getStoredUser(): User | null {
 function getStoredMenu(): MenuItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.MENU);
-    return raw ? JSON.parse(raw) : mockMenuItems;
+    return sanitizeMenu(raw ? JSON.parse(raw) : mockMenuItems);
   } catch {
-    return mockMenuItems;
+    return sanitizeMenu(mockMenuItems);
   }
 }
 

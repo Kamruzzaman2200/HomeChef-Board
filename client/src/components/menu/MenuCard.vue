@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { MenuItem } from '@/types';
 import { useCartStore } from '@/stores/cart';
 import { Plus, Check, UtensilsCrossed } from 'lucide-vue-next';
@@ -16,6 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const cartStore = useCartStore();
+const imageError = ref(false);
 
 const cartItem = computed(() =>
   cartStore.items.find((i) => i.menuItem.id === props.item.id)
@@ -26,6 +27,10 @@ const isAdded = computed(() => !!cartItem.value);
 function handleAddToCart() {
   if (!props.item.available) return;
   cartStore.addItem(props.item, 1);
+}
+
+function handleImageError() {
+  imageError.value = true;
 }
 </script>
 
@@ -39,14 +44,19 @@ function handleAddToCart() {
     <!-- Food Image -->
     <div class="relative h-48 w-full overflow-hidden bg-stone-100">
       <img
-        v-if="item.image"
+        v-if="item.image && !imageError"
         :src="item.image"
         :alt="item.name"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
+        @error="handleImageError"
       />
-      <div v-else class="w-full h-full flex items-center justify-center text-stone-400 bg-cream-200">
-        <UtensilsCrossed class="w-12 h-12" />
+      <div v-else class="w-full h-full flex flex-col items-center justify-center text-stone-400 bg-gradient-to-br from-cream-100 via-stone-100 to-cream-200 p-4 text-center select-none">
+        <div class="w-12 h-12 rounded-xl bg-kitchen-100 text-kitchen-800 flex items-center justify-center shadow-2xs mb-1.5">
+          <UtensilsCrossed class="w-6 h-6" />
+        </div>
+        <span class="text-xs font-bold text-stone-800 line-clamp-1">{{ item.name }}</span>
+        <span class="text-[10px] text-stone-600 font-semibold tracking-wide uppercase">{{ item.category }}</span>
       </div>
 
       <!-- Category Pill -->

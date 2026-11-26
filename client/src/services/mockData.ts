@@ -70,7 +70,7 @@ export const mockMenuItems: MenuItem[] = [
     description: 'Flaky buttery puff pastry loaded with creamy Puglia burrata, balsamic glaze, and fresh basil pesto.',
     category: 'Starters',
     price: 14.00,
-    image: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?auto=format&fit=crop&w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1506280754576-f6fa8a873550?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
