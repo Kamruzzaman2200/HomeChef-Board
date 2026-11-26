@@ -26,6 +26,7 @@
 ## 📑 Table of Contents
 
 - [🌟 Features & Capabilities](#-features--capabilities)
+- [📄 Product Requirements Document (PRD)](#-product-requirements-document-prd)
 - [🏗️ System Architecture & Workflow](#️-system-architecture--workflow)
 - [🛠️ Technology Stack](#️-technology-stack)
 - [📁 Monorepo Project Structure](#-monorepo-project-structure)
@@ -41,6 +42,19 @@
 - [📽️ Demo Presentation & Internship Submission](#️-demo-presentation--internship-submission)
 - [🚢 Production Deployment](#-production-deployment)
 - [📄 License](#-license)
+
+---
+
+## 📄 Product Requirements Document (PRD)
+
+The complete internship project specification is available in both PDF and Markdown formats, created to the TriFin-Loop R&D Software Engineering Internship standards:
+- 📕 **Official PRD PDF**: [HomeChef_Board_PRD_v1.0.pdf](HomeChef_Board_PRD_v1.0.pdf)
+- 📝 **PRD Markdown Source**: [docs/HomeChef_Board_PRD_v1.0.md](docs/HomeChef_Board_PRD_v1.0.md)
+- 🌐 **Formatted Web View**: [docs/HomeChef_Board_PRD_v1.0.html](docs/HomeChef_Board_PRD_v1.0.html)
+
+Includes all 9 sections: Problem & Users, Scope & MVP Inventory, User Stories & Process Flow, Functional Requirements (FR-01 to FR-05), Non-Functional Targets (NFR-01 to NFR-06), UX Screen Wireframes, Architecture & Database Design, Test Plan & Traceability Matrix, and Execution Plan.
+
+---
 
 ---
 
