@@ -9,43 +9,48 @@ const STORAGE_KEYS = {
   DATA_VERSION: 'homechef_data_version',
 };
 
-const CURRENT_DATA_VERSION = 'v4_bdt_local_images';
+const CURRENT_DATA_VERSION = 'v5_bdt_fixed_pricing';
 
 // Auto-sanitize menu items to heal any stale broken image links or USD prices in localStorage
 function sanitizeMenu(items: MenuItem[]): MenuItem[] {
   let changed = false;
-  const imageMap: Record<string, string> = {
-    'm-1': '/images/sourdough.jpg',
-    'm-2': '/images/short-ribs.jpg',
-    'm-3': '/images/lasagna.jpg',
-    'm-4': '/images/roasted-chicken.jpg',
-    'm-5': '/images/burrata-tart.jpg',
-    'm-6': '/images/cheesecake.jpg',
-    'm-7': '/images/babka.jpg',
-    'm-8': '/images/family-pack.jpg',
+  const imageByName: Record<string, string> = {
+    'artisan sourdough boule': '/images/sourdough.jpg',
+    'braised beef short ribs': '/images/short-ribs.jpg',
+    'wild mushroom & truffle lasagna': '/images/lasagna.jpg',
+    'lemon rosemary roasted chicken': '/images/roasted-chicken.jpg',
+    'burrata & heirloom tomato tart': '/images/burrata-tart.jpg',
+    'basque burnt cheesecake': '/images/cheesecake.jpg',
+    'cardamom pistachio babka': '/images/babka.jpg',
+    'weekend feast family pack': '/images/family-pack.jpg',
   };
-  const priceMap: Record<string, number> = {
-    'm-1': 450,
-    'm-2': 1450,
-    'm-3': 950,
-    'm-4': 1150,
-    'm-5': 650,
-    'm-6': 450,
-    'm-7': 550,
-    'm-8': 3850,
+  const priceByName: Record<string, number> = {
+    'artisan sourdough boule': 450,
+    'braised beef short ribs': 1450,
+    'wild mushroom & truffle lasagna': 950,
+    'lemon rosemary roasted chicken': 1150,
+    'burrata & heirloom tomato tart': 650,
+    'basque burnt cheesecake': 450,
+    'cardamom pistachio babka': 550,
+    'weekend feast family pack': 3850,
   };
 
   const sanitized = items.map((item) => {
     let itemChanged = false;
     let newImg = item.image;
-    let newPrice = item.price;
+    let newPrice = Number(item.price);
+    const key = (item.name || '').trim().toLowerCase();
 
-    if (imageMap[item.id] && (!item.image || item.image.includes('unsplash.com'))) {
-      newImg = imageMap[item.id];
+    if (imageByName[key] && (!item.image || item.image.includes('unsplash.com'))) {
+      newImg = imageByName[key];
       itemChanged = true;
     }
-    if (priceMap[item.id] && Number(item.price) < 100) {
-      newPrice = priceMap[item.id];
+    if (newPrice < 100) {
+      if (priceByName[key]) {
+        newPrice = priceByName[key];
+      } else {
+        newPrice = Math.round(newPrice * 110);
+      }
       itemChanged = true;
     }
 
@@ -277,7 +282,8 @@ export const api = {
 
       const res = await fetch(url, { credentials: 'include' });
       if (res.ok) {
-        return await res.json();
+        const data = await res.json();
+        return sanitizeMenu(data);
       }
     } catch {
       // fallback to mock
