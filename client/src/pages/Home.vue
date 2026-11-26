@@ -45,7 +45,7 @@ onMounted(async () => {
       <!-- Atmospheric Kitchen Photography Backdrop with dark overlay -->
       <div
         class="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-15 pointer-events-none"
-        style="background-image: url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1600&q=80');"
+        style="background-image: url('/images/kitchen-bg.jpg');"
       />
       <!-- Decorative background glow blurs -->
       <div class="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-kitchen-600/30 blur-3xl pointer-events-none" />
@@ -110,14 +110,11 @@ onMounted(async () => {
         <!-- Right: Featured Dish Showcase Card (5 columns) -->
         <div class="lg:col-span-5">
           <div class="relative w-full max-w-md mx-auto lg:max-w-none">
-            <!-- Glow backdrop -->
-            <div class="absolute -inset-1 bg-gradient-to-r from-terracotta-500/40 to-amber-500/40 rounded-3xl blur-md pointer-events-none" />
-
-            <div class="relative bg-kitchen-900/90 rounded-2xl border border-kitchen-700/80 shadow-2xl overflow-hidden backdrop-blur-sm group">
+            <div class="relative bg-kitchen-900/95 rounded-2xl border border-kitchen-700/80 shadow-2xl overflow-hidden ring-1 ring-white/10 group">
               <!-- Dish Image with Hover Zoom -->
               <div class="relative h-48 sm:h-56 w-full overflow-hidden bg-kitchen-950">
                 <img
-                  src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
+                  src="/images/hero-spread.jpg"
                   alt="Today's Kitchen Feast"
                   class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   loading="eager"

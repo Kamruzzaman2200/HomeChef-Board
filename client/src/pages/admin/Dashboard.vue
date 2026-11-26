@@ -73,7 +73,7 @@ const activeOrders = computed(() => {
         </div>
         <div>
           <span class="text-xs font-bold text-stone-600 uppercase tracking-wider block">Estimated Revenue</span>
-          <span class="text-2xl font-extrabold text-stone-900">${{ stats.todayRevenue.toFixed(2) }}</span>
+          <span class="text-2xl font-extrabold text-stone-900">৳{{ stats.todayRevenue.toLocaleString() }}</span>
         </div>
       </Card>
 
@@ -176,7 +176,7 @@ const activeOrders = computed(() => {
                   <StatusBadge :status="order.status" size="sm" />
                 </td>
                 <td class="py-3 px-3 text-right font-extrabold text-kitchen-900">
-                  ${{ Number(order.total).toFixed(2) }}
+                  ৳{{ Number(order.total).toLocaleString() }}
                 </td>
               </tr>
             </tbody>

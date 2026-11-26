@@ -6,21 +6,56 @@ const STORAGE_KEYS = {
   MENU: 'homechef_menu_items',
   ORDERS: 'homechef_orders',
   USER: 'homechef_current_user',
+  DATA_VERSION: 'homechef_data_version',
 };
 
-// Auto-sanitize menu items to heal any stale broken image links in localStorage
+const CURRENT_DATA_VERSION = 'v4_bdt_local_images';
+
+// Auto-sanitize menu items to heal any stale broken image links or USD prices in localStorage
 function sanitizeMenu(items: MenuItem[]): MenuItem[] {
   let changed = false;
+  const imageMap: Record<string, string> = {
+    'm-1': '/images/sourdough.jpg',
+    'm-2': '/images/short-ribs.jpg',
+    'm-3': '/images/lasagna.jpg',
+    'm-4': '/images/roasted-chicken.jpg',
+    'm-5': '/images/burrata-tart.jpg',
+    'm-6': '/images/cheesecake.jpg',
+    'm-7': '/images/babka.jpg',
+    'm-8': '/images/family-pack.jpg',
+  };
+  const priceMap: Record<string, number> = {
+    'm-1': 450,
+    'm-2': 1450,
+    'm-3': 950,
+    'm-4': 1150,
+    'm-5': 650,
+    'm-6': 450,
+    'm-7': 550,
+    'm-8': 3850,
+  };
+
   const sanitized = items.map((item) => {
-    if (item.image && item.image.includes('photo-1592417817098-8f3d6910985c')) {
+    let itemChanged = false;
+    let newImg = item.image;
+    let newPrice = item.price;
+
+    if (imageMap[item.id] && (!item.image || item.image.includes('unsplash.com'))) {
+      newImg = imageMap[item.id];
+      itemChanged = true;
+    }
+    if (priceMap[item.id] && Number(item.price) < 100) {
+      newPrice = priceMap[item.id];
+      itemChanged = true;
+    }
+
+    if (itemChanged) {
       changed = true;
-      return {
-        ...item,
-        image: 'https://images.unsplash.com/photo-1506280754576-f6fa8a873550?auto=format&fit=crop&w=600&q=80',
-      };
+      return { ...item, image: newImg, price: newPrice };
     }
     return item;
   });
+
   if (changed && typeof window !== 'undefined') {
     try {
       localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(sanitized));
@@ -34,20 +69,30 @@ function sanitizeMenu(items: MenuItem[]): MenuItem[] {
 // Initialize localStorage with mock data if not already present
 function initLocalStorage() {
   if (typeof window === 'undefined') return;
-  const storedMenu = localStorage.getItem(STORAGE_KEYS.MENU);
-  if (!storedMenu) {
+
+  const currentVersion = localStorage.getItem(STORAGE_KEYS.DATA_VERSION);
+  if (currentVersion !== CURRENT_DATA_VERSION) {
+    // Reset to fresh BDT pricing and bundled local assets
     localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(mockMenuItems));
+    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(mockOrders));
+    localStorage.setItem(STORAGE_KEYS.DATA_VERSION, CURRENT_DATA_VERSION);
   } else {
-    try {
-      const parsed = JSON.parse(storedMenu);
-      sanitizeMenu(parsed);
-    } catch {
+    const storedMenu = localStorage.getItem(STORAGE_KEYS.MENU);
+    if (!storedMenu) {
       localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(mockMenuItems));
+    } else {
+      try {
+        const parsed = JSON.parse(storedMenu);
+        sanitizeMenu(parsed);
+      } catch {
+        localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(mockMenuItems));
+      }
+    }
+    if (!localStorage.getItem(STORAGE_KEYS.ORDERS)) {
+      localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(mockOrders));
     }
   }
-  if (!localStorage.getItem(STORAGE_KEYS.ORDERS)) {
-    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(mockOrders));
-  }
+
   if (!localStorage.getItem(STORAGE_KEYS.USER)) {
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(mockUsers[0]));
   }
@@ -430,8 +475,8 @@ export const api = {
       };
     });
 
-    // Packaging fee
-    total += 1.50;
+    // Packaging fee (BDT 50)
+    total += 50.00;
 
     const newOrder: Order = {
       id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,

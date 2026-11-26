@@ -33,7 +33,7 @@ const form = ref({
   name: '',
   description: '',
   category: 'Mains',
-  price: 15.00,
+  price: 650,
   image: '',
   available: true,
 });
@@ -221,7 +221,7 @@ async function handleDelete(id: string) {
 
               <!-- Price -->
               <td class="py-3 px-4 font-bold text-stone-900 text-sm">
-                ${{ Number(item.price).toFixed(2) }}
+                ৳{{ Number(item.price).toLocaleString() }}
               </td>
 
               <!-- Availability Toggle -->
@@ -295,8 +295,8 @@ async function handleDelete(id: string) {
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Price ($) *</label>
-            <Input v-model.number="form.price" type="number" step="0.5" required />
+            <label class="block text-xs font-bold text-stone-700 mb-1">Price (৳ BDT) *</label>
+            <Input v-model.number="form.price" type="number" step="10" required />
           </div>
         </div>
 

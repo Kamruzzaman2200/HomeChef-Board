@@ -132,8 +132,8 @@ assert(!shortPassReg.success, 'Rejects password shorter than 6 chars');
 console.log('\n💰 5. Server-Side Totals & Snapshot Fidelity:');
 
 const mockDbMenu = [
-  { id: 'm-01', name: 'Artisan Sourdough Boule', price: 9.50, available: true },
-  { id: 'm-02', name: 'Braised Beef Short Ribs', price: 26.00, available: true },
+  { id: 'm-01', name: 'Artisan Sourdough Boule', price: 450.00, available: true },
+  { id: 'm-02', name: 'Braised Beef Short Ribs', price: 1450.00, available: true },
 ];
 
 function simulateServerOrderCalc(orderedItems) {
@@ -149,7 +149,7 @@ function simulateServerOrderCalc(orderedItems) {
       quantity: item.quantity,
     });
   }
-  const total = subtotal + 1.50; // Packaging fee
+  const total = subtotal + 50.00; // Packaging fee (BDT 50)
   return { total, snapshots };
 }
 
@@ -158,9 +158,9 @@ const calculated = simulateServerOrderCalc([
   { menuItemId: 'm-02', quantity: 1 },
 ]);
 
-assert(calculated.total === 46.50, 'Server-side total calculated accurately: $46.50');
+assert(calculated.total === 2400.00, 'Server-side total calculated accurately: ৳2,400.00');
 assert(calculated.snapshots[0].itemNameSnapshot === 'Artisan Sourdough Boule', 'Snapshot preserved name correctly');
-assert(calculated.snapshots[0].unitPrice === 9.50, 'Snapshot preserved unit price correctly');
+assert(calculated.snapshots[0].unitPrice === 450.00, 'Snapshot preserved unit price correctly');
 
 // ==========================================
 // Test 6: Submission Deliverables Check

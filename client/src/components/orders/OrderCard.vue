@@ -122,7 +122,7 @@ function handleAdvance() {
             {{ item.itemNameSnapshot }}
           </span>
           <span class="text-stone-600 text-[11px] shrink-0 ml-2">
-            ${{ (Number(item.unitPrice) * item.quantity).toFixed(2) }}
+            ৳{{ (Number(item.unitPrice) * item.quantity).toLocaleString() }}
           </span>
         </div>
       </div>
@@ -139,7 +139,7 @@ function handleAdvance() {
       <div>
         <span class="text-[10px] text-stone-600 uppercase font-semibold block">Total</span>
         <span class="text-base font-extrabold text-kitchen-900">
-          ${{ Number(order.total).toFixed(2) }}
+          ৳{{ Number(order.total).toLocaleString() }}
         </span>
       </div>
 

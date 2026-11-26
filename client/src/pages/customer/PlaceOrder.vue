@@ -50,7 +50,7 @@ const timeSlots = [
   '07:00 PM',
 ];
 
-const packagingFee = computed(() => (cartStore.subtotal > 0 ? 1.50 : 0));
+const packagingFee = computed(() => (cartStore.subtotal > 0 ? 50 : 0));
 const grandTotal = computed(() => cartStore.subtotal + packagingFee.value);
 
 async function handleSubmitOrder() {
@@ -231,7 +231,7 @@ async function handleSubmitOrder() {
             >
               <div class="truncate">
                 <div class="text-xs font-bold text-stone-900 truncate">{{ item.name }}</div>
-                <div class="text-[11px] text-stone-600">${{ Number(item.price).toFixed(2) }}</div>
+                <div class="text-[11px] text-stone-600">৳{{ Number(item.price).toLocaleString() }}</div>
               </div>
               <Button size="sm" variant="cream" @click="cartStore.addItem(item, 1)">
                 <Plus class="w-3 h-3" />
@@ -279,7 +279,7 @@ async function handleSubmitOrder() {
                   {{ item.menuItem.name }}
                 </h4>
                 <div class="text-[11px] text-stone-600">
-                  ${{ Number(item.menuItem.price).toFixed(2) }} each
+                  ৳{{ Number(item.menuItem.price).toLocaleString() }} each
                 </div>
               </div>
 
@@ -305,9 +305,9 @@ async function handleSubmitOrder() {
               </div>
 
               <!-- Subtotal per item -->
-              <div class="text-right shrink-0 w-16">
+              <div class="text-right shrink-0 w-20">
                 <span class="text-xs font-bold text-stone-900">
-                  ${{ (item.menuItem.price * item.quantity).toFixed(2) }}
+                  ৳{{ (item.menuItem.price * item.quantity).toLocaleString() }}
                 </span>
               </div>
 
@@ -327,16 +327,16 @@ async function handleSubmitOrder() {
           <div v-if="cartStore.items.length > 0" class="pt-3 border-t border-stone-100 space-y-1.5 text-xs text-stone-600">
             <div class="flex justify-between">
               <span>Dishes Subtotal</span>
-              <span class="font-medium text-stone-800">${{ cartStore.subtotal.toFixed(2) }}</span>
+              <span class="font-medium text-stone-800">৳{{ cartStore.subtotal.toLocaleString() }}</span>
             </div>
             <div class="flex justify-between">
               <span>Eco-friendly Thermal Box Packing</span>
-              <span class="font-medium text-stone-800">${{ packagingFee.toFixed(2) }}</span>
+              <span class="font-medium text-stone-800">৳{{ packagingFee.toLocaleString() }}</span>
             </div>
             <div class="pt-2 border-t border-stone-200 flex justify-between items-baseline">
               <span class="text-sm font-bold text-stone-900">Estimated Total</span>
               <span class="text-xl font-extrabold text-kitchen-900">
-                ${{ grandTotal.toFixed(2) }}
+                ৳{{ grandTotal.toLocaleString() }}
               </span>
             </div>
             <p class="text-[10px] text-stone-600 italic pt-1">

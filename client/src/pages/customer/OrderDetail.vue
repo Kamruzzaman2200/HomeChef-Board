@@ -175,7 +175,7 @@ async function handleSubmitFeedback() {
 
           <div class="text-right sm:border-l sm:border-kitchen-700 sm:pl-6 print:border-none">
             <span class="text-xs uppercase tracking-wider text-kitchen-200 print:text-black block">Total Due Upon Handover</span>
-            <span class="text-2xl font-extrabold text-white print:text-black">${{ Number(order.total).toFixed(2) }}</span>
+            <span class="text-2xl font-extrabold text-white print:text-black">৳{{ Number(order.total).toLocaleString() }}</span>
           </div>
         </div>
       </Card>
@@ -246,12 +246,12 @@ async function handleSubmitFeedback() {
                     {{ item.itemNameSnapshot }}
                   </div>
                   <div class="text-[11px] text-stone-600">
-                    ${{ Number(item.unitPrice).toFixed(2) }} per unit
+                    ৳{{ Number(item.unitPrice).toLocaleString() }} per unit
                   </div>
                 </div>
               </div>
               <div class="text-xs font-extrabold text-stone-900">
-                ${{ (Number(item.unitPrice) * item.quantity).toFixed(2) }}
+                ৳{{ (Number(item.unitPrice) * item.quantity).toLocaleString() }}
               </div>
             </div>
           </div>
@@ -263,7 +263,7 @@ async function handleSubmitFeedback() {
               <span>Historical price guarantee applied</span>
             </div>
             <div class="text-base font-extrabold text-kitchen-900">
-              Total: ${{ Number(order.total).toFixed(2) }}
+              Total: ৳{{ Number(order.total).toLocaleString() }}
             </div>
           </div>
         </Card>

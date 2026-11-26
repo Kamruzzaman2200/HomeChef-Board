@@ -91,7 +91,7 @@ function handleImageError() {
             {{ item.name }}
           </h3>
           <span class="font-extrabold text-base text-kitchen-800 shrink-0">
-            ${{ Number(item.price).toFixed(2) }}
+            ৳{{ Number(item.price).toLocaleString() }}
           </span>
         </div>
 

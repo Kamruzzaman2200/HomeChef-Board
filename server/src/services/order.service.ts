@@ -40,8 +40,8 @@ export class OrderService {
       };
     });
 
-    // Packaging / eco-box fee
-    total += 1.50;
+    // Packaging / eco-box fee (BDT 50)
+    total += 50.00;
 
     // 3. Insert inside database transaction
     const newOrder = await prisma.$transaction(async (tx) => {
