@@ -1,7 +1,7 @@
 import prisma from '../config/prisma.js';
 import { CreateMenuItemInput, UpdateMenuItemInput } from '../validators/menu.validator.js';
 
-const fallbackMenuItems = [
+export const fallbackMenuItems = [
   {
     id: 'm-01',
     name: 'Artisan Sourdough Boule',
@@ -142,7 +142,8 @@ export class MenuService {
       // Fallback
     }
 
-    const fallback = fallbackMenuItems.find((i) => i.id === id);
+    const normalizedId = id.replace(/^m-(\d)$/, 'm-0$1');
+    const fallback = fallbackMenuItems.find((i) => i.id === id || i.id === normalizedId);
     if (!fallback) {
       throw new Error('Menu item not found');
     }
@@ -150,44 +151,90 @@ export class MenuService {
   }
 
   static async create(input: CreateMenuItemInput) {
-    return prisma.menuItem.create({
-      data: {
+    try {
+      return await prisma.menuItem.create({
+        data: {
+          name: input.name,
+          description: input.description,
+          category: input.category,
+          price: input.price,
+          image: input.image,
+          available: input.available ?? true,
+        },
+      });
+    } catch {
+      const newItem = {
+        id: `m-${Date.now()}`,
         name: input.name,
-        description: input.description,
+        description: input.description || null,
         category: input.category,
-        price: input.price,
-        image: input.image,
+        price: Number(input.price),
+        image: input.image || null,
         available: input.available ?? true,
-      },
-    });
+        isArchived: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      fallbackMenuItems.unshift(newItem as any);
+      return newItem;
+    }
   }
 
   static async update(id: string, input: UpdateMenuItemInput) {
-    return prisma.menuItem.update({
-      where: { id },
-      data: input,
-    });
+    try {
+      return await prisma.menuItem.update({
+        where: { id },
+        data: input,
+      });
+    } catch {
+      const normalizedId = id.replace(/^m-(\d)$/, 'm-0$1');
+      const item = fallbackMenuItems.find((i) => i.id === id || i.id === normalizedId);
+      if (!item) throw new Error('Menu item not found');
+      Object.assign(item, input, { updatedAt: new Date() });
+      return item;
+    }
   }
 
   static async toggleAvailability(id: string) {
-    const item = await prisma.menuItem.findUnique({ where: { id } });
+    try {
+      const item = await prisma.menuItem.findUnique({ where: { id } });
+      if (item) {
+        return await prisma.menuItem.update({
+          where: { id },
+          data: { available: !item.available },
+        });
+      }
+    } catch {
+      // Fallback
+    }
+
+    const normalizedId = id.replace(/^m-(\d)$/, 'm-0$1');
+    const item = fallbackMenuItems.find((i) => i.id === id || i.id === normalizedId);
     if (!item) {
       throw new Error('Menu item not found');
     }
-    return prisma.menuItem.update({
-      where: { id },
-      data: { available: !item.available },
-    });
+    item.available = !item.available;
+    item.updatedAt = new Date();
+    return item;
   }
 
   static async delete(id: string) {
-    // Soft delete / archive to ensure foreign key safety and historical order preservation
-    return prisma.menuItem.update({
-      where: { id },
-      data: {
-        isArchived: true,
-        available: false,
-      },
-    });
+    try {
+      return await prisma.menuItem.update({
+        where: { id },
+        data: {
+          isArchived: true,
+          available: false,
+        },
+      });
+    } catch {
+      const normalizedId = id.replace(/^m-(\d)$/, 'm-0$1');
+      const item = fallbackMenuItems.find((i) => i.id === id || i.id === normalizedId);
+      if (!item) throw new Error('Menu item not found');
+      item.isArchived = true;
+      item.available = false;
+      item.updatedAt = new Date();
+      return item;
+    }
   }
 }
