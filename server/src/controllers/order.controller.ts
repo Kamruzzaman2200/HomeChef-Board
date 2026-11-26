@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { OrderService } from '../services/order.service.js';
-import { createOrderSchema, updateOrderStatusSchema } from '../validators/order.validator.js';
+import {
+  createOrderSchema,
+  updateOrderStatusSchema,
+  updateOrderNotesSchema,
+  orderFeedbackSchema,
+} from '../validators/order.validator.js';
 import { OrderStatus } from '@prisma/client';
 
 export class OrderController {
@@ -69,6 +74,33 @@ export class OrderController {
     try {
       const { status } = updateOrderStatusSchema.parse(req.body);
       const updated = await OrderService.updateStatus(req.params.id, status as OrderStatus);
+      res.json(updated);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async updateNotes(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { notes } = updateOrderNotesSchema.parse(req.body);
+      const updated = await OrderService.updateNotes(req.params.id, notes);
+      res.json(updated);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async submitFeedback(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { rating, note } = orderFeedbackSchema.parse(req.body);
+      const userId = req.session?.user?.id || (req.headers['x-demo-user-id'] as string);
+
+      if (!userId) {
+        res.status(401).json({ error: 'You must be signed in to submit feedback' });
+        return;
+      }
+
+      const updated = await OrderService.submitFeedback(req.params.id, userId, rating, note);
       res.json(updated);
     } catch (err) {
       next(err);

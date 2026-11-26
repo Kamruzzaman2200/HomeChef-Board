@@ -43,6 +43,15 @@ export class MenuController {
     }
   }
 
+  static async toggle(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const updated = await MenuService.toggleAvailability(req.params.id);
+      res.json(updated);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       await MenuService.delete(req.params.id);

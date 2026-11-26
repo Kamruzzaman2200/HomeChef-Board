@@ -141,9 +141,84 @@ export class OrderService {
   }
 
   static async updateStatus(id: string, status: OrderStatus) {
+    const existing = await prisma.order.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+
+    if (!existing) {
+      throw new Error('Order not found');
+    }
+
+    // Business Rule 8.8: Prevent editing completed/cancelled orders except admin notes
+    if (existing.status === 'COMPLETED' || existing.status === 'CANCELLED') {
+      if (existing.status !== status) {
+        throw new Error(
+          `Cannot change status of an order that is already ${existing.status}. Completed and cancelled orders are immutable.`
+        );
+      }
+    }
+
     return prisma.order.update({
       where: { id },
       data: { status },
+      include: {
+        items: {
+          include: { menuItem: true },
+        },
+        user: {
+          select: { id: true, name: true, email: true, phone: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Allows updating chef / kitchen preparation notes even on completed orders.
+   */
+  static async updateNotes(id: string, notes: string) {
+    const existing = await prisma.order.findUnique({ where: { id } });
+    if (!existing) {
+      throw new Error('Order not found');
+    }
+
+    return prisma.order.update({
+      where: { id },
+      data: { notes },
+      include: {
+        items: {
+          include: { menuItem: true },
+        },
+        user: {
+          select: { id: true, name: true, email: true, phone: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Customer post-completion feedback and review rating.
+   */
+  static async submitFeedback(id: string, userId: string, rating: number, note?: string) {
+    const order = await prisma.order.findUnique({ where: { id } });
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    if (order.userId !== userId) {
+      throw new Error('You can only submit feedback for your own orders');
+    }
+
+    if (order.status !== 'COMPLETED') {
+      throw new Error('Feedback can only be submitted once the order has been completed');
+    }
+
+    return prisma.order.update({
+      where: { id },
+      data: {
+        feedbackRating: rating,
+        feedbackNote: note || null,
+      },
       include: {
         items: {
           include: { menuItem: true },

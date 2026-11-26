@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useOrderStore } from '@/stores/order';
+import { useAuthStore } from '@/stores/auth';
 import { Order, OrderStatus } from '@/types';
 import StatusBadge from '@/components/ui/StatusBadge.vue';
 import Button from '@/components/ui/Button.vue';
@@ -14,14 +15,31 @@ import {
   User,
   ShoppingBag,
   Info,
+  Printer,
+  Star,
+  MessageSquare,
+  Edit3,
+  Check,
 } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
 const orderStore = useOrderStore();
+const authStore = useAuthStore();
 
 const order = ref<Order | null>(null);
 const loading = ref(true);
+
+// Notes editing state for admin
+const isEditingNotes = ref(false);
+const editedNotes = ref('');
+const isSavingNotes = ref(false);
+
+// Customer feedback state
+const feedbackRating = ref(5);
+const feedbackNote = ref('');
+const isSubmittingFeedback = ref(false);
+const feedbackSuccess = ref(false);
 
 const orderId = computed(() => route.params.id as string);
 
@@ -44,16 +62,56 @@ onMounted(async () => {
   try {
     const found = await orderStore.getOrder(orderId.value);
     order.value = found;
+    if (found) {
+      editedNotes.value = found.notes || '';
+      if (found.feedbackRating) {
+        feedbackRating.value = found.feedbackRating;
+        feedbackNote.value = found.feedbackNote || '';
+      }
+    }
   } finally {
     loading.value = false;
   }
 });
+
+function handlePrint() {
+  window.print();
+}
+
+async function handleSaveNotes() {
+  if (!order.value) return;
+  isSavingNotes.value = true;
+  try {
+    const updated = await orderStore.updateNotes(order.value.id, editedNotes.value);
+    order.value = updated;
+    isEditingNotes.value = false;
+  } finally {
+    isSavingNotes.value = false;
+  }
+}
+
+async function handleSubmitFeedback() {
+  if (!order.value) return;
+  isSubmittingFeedback.value = true;
+  try {
+    const updated = await orderStore.submitFeedback(
+      order.value.id,
+      feedbackRating.value,
+      feedbackNote.value
+    );
+    order.value = updated;
+    feedbackSuccess.value = true;
+  } finally {
+    isSubmittingFeedback.value = false;
+  }
+}
 </script>
 
 <template>
   <div class="max-w-4xl mx-auto space-y-6">
-    <!-- Top Bar Navigation -->
-    <div class="flex items-center justify-between">
+    
+    <!-- Top Bar Navigation (Hidden in Print) -->
+    <div class="print:hidden flex items-center justify-between">
       <button
         @click="router.back()"
         class="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 hover:text-kitchen-800 transition-colors cursor-pointer"
@@ -62,15 +120,29 @@ onMounted(async () => {
         <span>Back to Orders</span>
       </button>
 
-      <span v-if="order" class="text-xs text-stone-600">
-        Created on {{ new Date(order.createdAt).toLocaleDateString() }}
-      </span>
+      <div class="flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          @click="handlePrint"
+          class="flex items-center gap-1.5 text-xs"
+        >
+          <Printer class="w-3.5 h-3.5" />
+          <span>Print Kitchen Ticket</span>
+        </Button>
+
+        <span v-if="order" class="text-xs text-stone-600">
+          Created on {{ new Date(order.createdAt).toLocaleDateString() }}
+        </span>
+      </div>
     </div>
 
+    <!-- Loading State -->
     <div v-if="loading" class="py-16 text-center text-stone-600 text-sm">
       Retrieving kitchen order details...
     </div>
 
+    <!-- Not Found State -->
     <div v-else-if="!order" class="py-16 text-center space-y-3 bg-white rounded-2xl border border-stone-200">
       <h2 class="text-lg font-bold text-stone-900">Order Not Found</h2>
       <p class="text-xs text-stone-600">
@@ -81,32 +153,35 @@ onMounted(async () => {
       </Button>
     </div>
 
+    <!-- Order Display -->
     <div v-else class="space-y-6">
       
       <!-- Order Header Card -->
-      <Card class="bg-gradient-to-r from-kitchen-900 to-kitchen-800 text-white border-0 shadow-soft-lg">
+      <Card class="bg-gradient-to-r from-kitchen-900 to-kitchen-800 text-white border-0 shadow-soft-lg print:border print:border-black print:text-black print:bg-none">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-3">
-              <h1 class="text-2xl font-extrabold tracking-tight text-white">Order {{ order.id }}</h1>
+              <h1 class="text-2xl font-extrabold tracking-tight text-white print:text-black">
+                Order {{ order.id }}
+              </h1>
               <StatusBadge :status="order.status" size="lg" />
             </div>
-            <p class="text-xs text-stone-300 mt-1 flex items-center gap-2">
+            <p class="text-xs text-stone-300 print:text-stone-700 mt-1 flex items-center gap-2">
               <Clock class="w-3.5 h-3.5 text-kitchen-300" />
               <span>Target Ready Time: <strong>{{ order.fulfillTime }}</strong></span>
               <span v-if="order.fulfillDate">&middot; {{ order.fulfillDate }}</span>
             </p>
           </div>
 
-          <div class="text-right sm:border-l sm:border-kitchen-700 sm:pl-6">
-            <span class="text-xs uppercase tracking-wider text-kitchen-200 block">Total Due Upon Pickup</span>
-            <span class="text-2xl font-extrabold text-white">${{ Number(order.total).toFixed(2) }}</span>
+          <div class="text-right sm:border-l sm:border-kitchen-700 sm:pl-6 print:border-none">
+            <span class="text-xs uppercase tracking-wider text-kitchen-200 print:text-black block">Total Due Upon Handover</span>
+            <span class="text-2xl font-extrabold text-white print:text-black">${{ Number(order.total).toFixed(2) }}</span>
           </div>
         </div>
       </Card>
 
-      <!-- Preparation Stepper Timeline -->
-      <Card>
+      <!-- Preparation Stepper Timeline (Hidden in Print) -->
+      <Card class="print:hidden">
         <h3 class="text-sm font-bold text-stone-900 mb-4 flex items-center gap-2">
           <Clock class="w-4 h-4 text-kitchen-800" />
           <span>Preparation Status Timeline</span>
@@ -152,7 +227,7 @@ onMounted(async () => {
           <div class="flex items-center justify-between border-b border-stone-100 pb-3 mb-3">
             <h3 class="text-sm font-bold text-stone-900 flex items-center gap-2">
               <ShoppingBag class="w-4 h-4 text-kitchen-800" />
-              <span>Prepared Dishes</span>
+              <span>Prepared Dishes Checklist</span>
             </h3>
             <span class="text-xs text-stone-600">{{ order.items.length }} items</span>
           </div>
@@ -163,13 +238,16 @@ onMounted(async () => {
               :key="item.id"
               class="py-3 flex items-center justify-between gap-2"
             >
-              <div>
-                <div class="text-xs font-bold text-stone-900">
-                  <span class="text-kitchen-800 font-extrabold mr-1">{{ item.quantity }}x</span>
-                  {{ item.itemNameSnapshot }}
-                </div>
-                <div class="text-[11px] text-stone-600">
-                  ${{ Number(item.unitPrice).toFixed(2) }} per unit
+              <div class="flex items-center gap-2">
+                <span class="print:inline-block hidden border border-black w-4 h-4 rounded-xs shrink-0"></span>
+                <div>
+                  <div class="text-xs font-bold text-stone-900">
+                    <span class="text-kitchen-800 font-extrabold mr-1">{{ item.quantity }}x</span>
+                    {{ item.itemNameSnapshot }}
+                  </div>
+                  <div class="text-[11px] text-stone-600">
+                    ${{ Number(item.unitPrice).toFixed(2) }} per unit
+                  </div>
                 </div>
               </div>
               <div class="text-xs font-extrabold text-stone-900">
@@ -182,7 +260,7 @@ onMounted(async () => {
           <div class="mt-4 pt-4 border-t border-stone-200 flex items-center justify-between">
             <div class="text-xs text-stone-600 flex items-center gap-1">
               <Info class="w-3.5 h-3.5 text-kitchen-700" />
-              <span>Item prices are preserved historically</span>
+              <span>Historical price guarantee applied</span>
             </div>
             <div class="text-base font-extrabold text-kitchen-900">
               Total: ${{ Number(order.total).toFixed(2) }}
@@ -216,10 +294,49 @@ onMounted(async () => {
                 </p>
               </div>
 
-              <div v-if="order.notes">
-                <span class="text-stone-600 block uppercase text-[10px] font-bold">Chef Preparation Notes</span>
-                <p class="font-medium text-amber-900 bg-amber-50 p-2 rounded-lg border border-amber-200 mt-1">
-                  "{{ order.notes }}"
+              <!-- Chef Preparation Notes (Editable by Admin even when order completed) -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-stone-600 uppercase text-[10px] font-bold">Chef Preparation Notes</span>
+                  <button
+                    v-if="authStore.isAdmin && !isEditingNotes"
+                    @click="isEditingNotes = true"
+                    class="text-kitchen-800 hover:underline inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                  >
+                    <Edit3 class="w-3 h-3" />
+                    <span>Edit</span>
+                  </button>
+                </div>
+
+                <div v-if="isEditingNotes" class="space-y-2">
+                  <textarea
+                    v-model="editedNotes"
+                    rows="2"
+                    class="w-full text-xs p-2 rounded-md border border-stone-300 focus:ring-1 focus:ring-kitchen-800"
+                    placeholder="Add or update chef notes..."
+                  ></textarea>
+                  <div class="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      @click="isEditingNotes = false"
+                      class="px-2 py-1 text-[11px] rounded bg-stone-100 text-stone-600"
+                    >
+                      Cancel
+                    </button>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      :disabled="isSavingNotes"
+                      @click="handleSaveNotes"
+                      class="text-[11px] py-1 h-auto"
+                    >
+                      Save Notes
+                    </Button>
+                  </div>
+                </div>
+
+                <p v-else class="font-medium text-amber-900 bg-amber-50 p-2 rounded-lg border border-amber-200 mt-1">
+                  {{ order.notes || 'No special chef notes.' }}
                 </p>
               </div>
             </div>
@@ -237,6 +354,81 @@ onMounted(async () => {
         </div>
 
       </div>
+
+      <!-- Optional Enhancement: Customer Feedback Section (When Completed) -->
+      <Card v-if="order.status === 'COMPLETED'" class="print:hidden bg-cream-50/70 border-kitchen-200">
+        <div class="flex items-center gap-2 mb-3">
+          <MessageSquare class="w-4 h-4 text-kitchen-800" />
+          <h3 class="text-sm font-bold text-stone-900">Kitchen Review &amp; Customer Feedback</h3>
+        </div>
+
+        <!-- Feedback already submitted -->
+        <div v-if="order.feedbackRating" class="space-y-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-semibold text-stone-700">Customer Rating:</span>
+            <div class="flex items-center text-amber-500">
+              <Star
+                v-for="s in 5"
+                :key="s"
+                class="w-4 h-4"
+                :class="s <= order.feedbackRating ? 'fill-amber-400 text-amber-500' : 'text-stone-300'"
+              />
+            </div>
+          </div>
+          <p v-if="order.feedbackNote" class="text-xs text-stone-800 italic bg-white p-3 rounded-lg border border-stone-200">
+            "{{ order.feedbackNote }}"
+          </p>
+          <div class="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
+            <Check class="w-3.5 h-3.5" />
+            <span>Thank you for supporting our artisan home kitchen!</span>
+          </div>
+        </div>
+
+        <!-- Submit Feedback Form -->
+        <div v-else class="space-y-3">
+          <p class="text-xs text-stone-600">
+            How was your meal? Your feedback helps our home chef refine recipes and baking times.
+          </p>
+
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Your Rating</label>
+            <div class="flex items-center gap-1">
+              <button
+                v-for="s in 5"
+                :key="s"
+                type="button"
+                @click="feedbackRating = s"
+                class="p-1 hover:scale-110 transition-transform cursor-pointer"
+              >
+                <Star
+                  class="w-6 h-6"
+                  :class="s <= feedbackRating ? 'fill-amber-400 text-amber-500' : 'text-stone-300'"
+                />
+              </button>
+              <span class="text-xs font-bold text-stone-700 ml-2">{{ feedbackRating }} / 5 Stars</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Comments for Chef</label>
+            <textarea
+              v-model="feedbackNote"
+              rows="2"
+              placeholder="e.g. Sourdough was amazingly crisp, short ribs melted in mouth!"
+              class="w-full text-xs p-2 rounded-md border border-stone-300 bg-white focus:outline-none focus:ring-1 focus:ring-kitchen-800"
+            ></textarea>
+          </div>
+
+          <Button
+            size="sm"
+            variant="default"
+            :disabled="isSubmittingFeedback"
+            @click="handleSubmitFeedback"
+          >
+            <span>{{ isSubmittingFeedback ? 'Sending...' : 'Submit Feedback' }}</span>
+          </Button>
+        </div>
+      </Card>
 
     </div>
   </div>

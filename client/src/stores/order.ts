@@ -67,6 +67,30 @@ export const useOrderStore = defineStore('orders', () => {
     return updated;
   }
 
+  async function updateNotes(id: string, notes: string) {
+    const updated = await api.updateOrderNotes(id, notes);
+    const index = orders.value.findIndex((o) => o.id === id);
+    if (index !== -1) {
+      orders.value[index] = updated;
+    }
+    if (activeOrder.value?.id === id) {
+      activeOrder.value = updated;
+    }
+    return updated;
+  }
+
+  async function submitFeedback(id: string, rating: number, note?: string) {
+    const updated = await api.submitOrderFeedback(id, rating, note);
+    const index = orders.value.findIndex((o) => o.id === id);
+    if (index !== -1) {
+      orders.value[index] = updated;
+    }
+    if (activeOrder.value?.id === id) {
+      activeOrder.value = updated;
+    }
+    return updated;
+  }
+
   async function placeOrder(payload: CreateOrderPayload, user: User) {
     loading.value = true;
     try {
@@ -93,6 +117,8 @@ export const useOrderStore = defineStore('orders', () => {
     loadOrders,
     getOrder,
     updateStatus,
+    updateNotes,
+    submitFeedback,
     placeOrder,
     getStats,
   };

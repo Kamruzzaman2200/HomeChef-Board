@@ -16,7 +16,8 @@ const router = useRouter();
 const orderStore = useOrderStore();
 
 const searchInput = ref('');
-const selectedDay = ref<'today' | 'all'>('all');
+const selectedDay = ref<'today' | 'all' | 'custom'>('all');
+const customDate = ref('');
 
 onMounted(async () => {
   await orderStore.loadOrders();
@@ -37,6 +38,8 @@ const filteredOrders = computed(() => {
     // Day filter
     if (selectedDay.value === 'today') {
       if (order.fulfillDate && !order.fulfillDate.startsWith(todayStr)) return false;
+    } else if (selectedDay.value === 'custom' && customDate.value) {
+      if (order.fulfillDate && !order.fulfillDate.startsWith(customDate.value)) return false;
     }
     // Search filter
     if (searchInput.value.trim()) {
@@ -97,6 +100,25 @@ function handleOrderClick(order: Order) {
             ]"
           >
             All Scheduled
+          </button>
+        </div>
+
+        <!-- Custom Date Filter -->
+        <div class="flex items-center gap-1.5 bg-white border border-stone-200 rounded-lg px-2.5 py-1 shadow-2xs">
+          <input
+            type="date"
+            v-model="customDate"
+            @change="selectedDay = 'custom'"
+            class="text-xs text-stone-700 bg-transparent focus:outline-none"
+            title="Filter by specific preparation date"
+          />
+          <button
+            v-if="selectedDay === 'custom' && customDate"
+            @click="customDate = ''; selectedDay = 'all'"
+            class="text-[10px] text-stone-400 hover:text-rose-600 font-bold ml-1"
+            title="Clear date filter"
+          >
+            ✕
           </button>
         </div>
 

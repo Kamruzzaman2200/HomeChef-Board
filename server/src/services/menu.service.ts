@@ -49,6 +49,17 @@ export class MenuService {
     });
   }
 
+  static async toggleAvailability(id: string) {
+    const item = await prisma.menuItem.findUnique({ where: { id } });
+    if (!item) {
+      throw new Error('Menu item not found');
+    }
+    return prisma.menuItem.update({
+      where: { id },
+      data: { available: !item.available },
+    });
+  }
+
   static async delete(id: string) {
     // Soft delete / archive to ensure foreign key safety and historical order preservation
     return prisma.menuItem.update({

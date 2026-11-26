@@ -74,6 +74,8 @@ model Order {
   status      OrderStatus @default(REQUESTED)
   total       Decimal     @db.Decimal(10, 2)
   notes       String?
+  feedbackRating Int?     // 1-5 star customer rating after completion
+  feedbackNote   String?  // Customer review/feedback note after completion
 
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt

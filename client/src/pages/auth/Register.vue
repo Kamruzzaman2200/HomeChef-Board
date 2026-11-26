@@ -20,7 +20,7 @@ const loading = ref(false);
 async function handleRegister() {
   loading.value = true;
   try {
-    const user = await authStore.register(name.value, email.value, phone.value, role.value);
+    const user = await authStore.register(name.value, email.value, phone.value, role.value, password.value);
     if (user.role === 'ADMIN') {
       router.push('/admin/daily-board');
     } else {

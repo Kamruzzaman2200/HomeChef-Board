@@ -11,6 +11,16 @@
 
 > A modern, full-stack kitchen order preparation and pre-order management system tailored for home-based culinary entrepreneurs, artisanal micro-bakers, and chef pre-order operations.
 
+> [!IMPORTANT]
+> ### 🔑 Quick Demo Login Credentials
+> The system comes pre-configured with ready-to-test accounts. You can also use the **1-Click Quick Demo Login** buttons on the sign-in page (`/login`) or the **Mode Switcher** in the top navigation bar.
+> 
+> | Role | Persona / Name | Email | Password | Access & Portals |
+> |---|---|---|---|---|
+> | 🍳 **Chef Admin** | Chef Sarah Jenkins | `chef@homechef.local` | `password123` | • Daily Kitchen Prep Kanban (`/admin/daily-board`)<br>• Throughput Analytics (`/admin/dashboard`)<br>• Menu Management & Availability (`/admin/menu-management`) |
+> | 🥐 **Customer (User 1)** | David Miller | `david.miller@gmail.com` | `password123` | • Artisan Menu Pre-Orders (`/order`)<br>• Order Tracking & Receipts (`/my-orders`)<br>• Star Rating & Review Submissions |
+> | 🥐 **Customer (User 2)** | Elena Rostova | `elena.rostova@outlook.com` | `password123` | • Local Delivery Pre-Orders (`/order`)<br>• Printable Thermal Ticket Slips (`/orders/:id`) |
+
 ---
 
 ## 📑 Table of Contents
@@ -24,9 +34,11 @@
   - [2. Installation](#2-installation)
   - [3. Neon PostgreSQL & Prisma Setup](#3-neon-postgresql--prisma-setup)
   - [4. Running the Development Servers](#4-running-the-development-servers)
+- [📸 Application Screenshots Gallery](#-application-screenshots-gallery)
 - [📡 REST API Reference](#-rest-api-reference)
 - [🗄️ Database Schema & Data Integrity](#️-database-schema--data-integrity)
 - [👥 Demo Accounts & Testing](#-demo-accounts--testing)
+- [📽️ Demo Presentation & Internship Submission](#️-demo-presentation--internship-submission)
 - [🚢 Production Deployment](#-production-deployment)
 - [📄 License](#-license)
 
@@ -226,22 +238,26 @@ DATABASE_URL="postgresql://[user]:[password]@[neon-hostname]/neondb?sslmode=requ
 SESSION_SECRET="homechef_kitchen_secret_session_key_2026"
 ```
 
-#### Step B: Generate Prisma Client & Push Schema
-Run Prisma migration to create the tables on Neon:
+#### Step B: Apply Schema & Seed to Neon PostgreSQL
 
+You have two convenient options to provision your Neon PostgreSQL database:
+
+**Option 1: 1-Click Direct SQL Import in Neon Console (Recommended for instant setup)**
+1. Open your [Neon Console](https://console.neon.tech/) and navigate to the **SQL Editor** tab.
+2. Open the file [database.sql](database.sql) (or `server/prisma/schema.sql`) from this repo.
+3. Paste the contents into the Neon SQL Editor and click **Run**.
+4. All tables, enums, indexes, and initial demo seed accounts/dishes will be instantly created!
+
+**Option 2: Using Prisma CLI**
 ```bash
 # Generate the Prisma TypeScript client
 npm run prisma:generate
 
-# Push schema directly to your PostgreSQL database
+# Deploy schema directly to your Neon PostgreSQL instance
 npm --prefix server run prisma:deploy
 # or: npx --prefix server prisma db push
-```
 
-#### Step C: Seed Demo Data
-Populate the initial chef account, demo customer, and signature kitchen menu items:
-
-```bash
+# Seed initial kitchen users and signature dishes
 npm run seed
 ```
 
@@ -260,6 +276,19 @@ npm run dev:server
 ```
 
 > **💡 Zero-Config Standalone Mode**: If you start `npm run dev:client` without running the backend server, the application automatically activates its **Offline Mock Engine**, persisting your orders, status changes, and menu edits directly in browser `localStorage`.
+
+---
+
+## 📸 Application Screenshots Gallery
+
+| Screen | Preview & Description |
+|---|---|
+| **1. Sign In & Demo Switcher** | ![Sign In Screen](docs/screenshots/01-login-screen.png)<br>*Instant demo account shortcuts for Chef Admin and Customer with role-based routing.* |
+| **2. Chef Analytics Dashboard** | ![Kitchen Analytics Dashboard](docs/screenshots/02-kitchen-analytics-dashboard.png)<br>*Live metrics tracking today's gross revenue, in-oven prep batches, and counter-ready tickets.* |
+| **3. Daily Kitchen Prep Board** | ![Daily Prep Kanban Board](docs/screenshots/03-daily-prep-kanban-board.png)<br>*Interactive 5-column Kanban board with batch stage transitions, date filtering, and search.* |
+| **4. Menu Management CRUD** | ![Menu Management CRUD](docs/screenshots/04-menu-management-crud.png)<br>*Dish catalog editor with real-time "Available / Sold Out" toggle and price adjustments.* |
+| **5. Pre-Order Scheduling Form** | ![Place Pre-Order](docs/screenshots/05-place-preorder.png)<br>*Frictionless pre-order scheduling with time slot pickers, pickup/delivery modes, and notes.* |
+| **6. Itemized Receipt & Print Ticket** | ![Order Details & Ticket](docs/screenshots/06-order-details-ticket.png)<br>*Prep timeline, historical price lock, 1-click printable kitchen ticket, and customer review rating.* |
 
 ---
 
@@ -283,16 +312,19 @@ All backend routes are exposed under the `/api` prefix.
 | `GET` | `/api/menu/:id` | Public | Get single menu item details |
 | `POST` | `/api/menu` | Chef / Admin | Create a new signature menu dish |
 | `PUT` | `/api/menu/:id` | Chef / Admin | Update dish information, description, or price |
+| `PATCH`| `/api/menu/:id` | Chef / Admin | Partial update dish fields |
 | `PATCH`| `/api/menu/:id/toggle` | Chef / Admin | Quick-toggle dish availability (Available / Sold Out) |
 | `DELETE`| `/api/menu/:id` | Chef / Admin | Archive dish from the menu catalog |
 
 ### 📦 Pre-Orders & Kanban (`/api/orders`)
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| `GET` | `/api/orders` | Auth (Role-based) | List orders (Chef sees all; Customer sees own) |
+| `GET` | `/api/orders` | Auth (Role-based) | List orders (Chef sees all; Customer sees own; supports filters) |
 | `GET` | `/api/orders/:id` | Auth | Get order by ID with itemized receipt snapshot |
-| `POST` | `/api/orders` | Customer / Auth | Submit a scheduled pre-order with time slot & notes |
+| `POST` | `/api/orders` | Customer / Auth | Submit a scheduled pre-order with server-calculated total |
 | `PATCH`| `/api/orders/:id/status` | Chef / Admin | Advance order status (`CONFIRMED`, `PREPARING`, `READY`, etc.) |
+| `PATCH`| `/api/orders/:id/notes` | Chef / Admin | Update chef preparation notes (allowed even for completed orders) |
+| `PATCH`| `/api/orders/:id/feedback`| Customer / Auth | Submit 1-5 star review rating and note on completed orders |
 
 ### 📊 Kitchen Dashboard & Health (`/api/dashboard`, `/api/health`)
 | Method | Endpoint | Access | Description |
@@ -336,12 +368,34 @@ Even if the chef raises prices or archives a dish next week, past customer recei
 
 ## 👥 Demo Accounts & Testing
 
-The application provides pre-configured credentials and an instant 1-click role switcher in the navbar:
+The application provides seeded accounts with known credentials, plus instant **1-Click Quick Demo Login** buttons on the sign-in screen and an instant **Mode Switcher** in the navbar:
 
-| Role | Email | Password | Permissions & Test Workflows |
-|---|---|---|---|
-| **Chef Admin** | `chef@homechef.local` | `password123` | • Manage daily Kanban prep pipeline<br>• View kitchen revenue & throughput metrics<br>• Add/edit dishes & toggle sold-out status |
-| **Customer** | `david.miller@gmail.com` | `password123` | • Browse seasonal kitchen pre-orders<br>• Schedule pickup/delivery dates & time slots<br>• Track live prep status & view receipts |
+### 🔑 Credentials Reference Table
+
+| Role | Name | Email | Password | Permissions & Test Workflows |
+|---|---|---|---|---|
+| **Chef Admin** | Chef Sarah Jenkins | `chef@homechef.local` | `password123` | • Manage the 5-stage daily Kanban prep board (`/admin/daily-board`)<br>• Advance batches from `CONFIRMED` ➔ `PREPARING` ➔ `READY` ➔ `COMPLETED`<br>• Monitor gross sales and in-oven throughput in `/admin/dashboard`<br>• Add/edit dishes & toggle **Available / Sold Out** in `/admin/menu-management`<br>• Update chef notes on completed orders |
+| **Customer (User 1)** | David Miller | `david.miller@gmail.com` | `password123` | • Browse the artisan food catalog at `/menu`<br>• Schedule curbside pickup or courier delivery slots at `/order`<br>• Review itemized receipts and live preparation progress at `/my-orders`<br>• Submit 1–5 star reviews and chef feedback after completion |
+| **Customer (User 2)** | Elena Rostova | `elena.rostova@outlook.com` | `password123` | • Test multi-customer order boards and search filters<br>• Generate and print thermal kitchen ticket slips |
+
+> **💡 How to Switch Between Personas**:
+> 1. **Option 1 (Instant Navbar Switcher)**: Click the **Mode: Chef Admin / Customer (Switch)** pill in the top navbar to toggle roles immediately without logging out.
+> 2. **Option 2 (Sign-In Screen Shortcuts)**: Navigate to `/login` and click either the **"Chef Admin"** or **"Customer"** quick-fill button to populate the form and sign in with a single click.
+
+---
+
+## 📽️ Demo Presentation & Internship Submission
+
+As part of the Full-Stack Internship Minimum Submission Package, a comprehensive slide deck guide is included:
+- **Presentation Guide**: [DEMO_PRESENTATION.md](DEMO_PRESENTATION.md)
+  - Slide 1: Project Overview & Tech Stack
+  - Slide 2: Real-World Home Kitchen Scenario & Problem
+  - Slide 3: Database Design (Neon PostgreSQL, Master-Detail, Price Snapshots)
+  - Slide 4: Backend API & Transactional Calculations
+  - Slide 5: Frontend Vue 3 Architecture & Kitchen Kanban
+  - Slide 6: Quality, Security & Validation Checklist
+  - Slide 7: Lessons Learned & Engineering Takeaways
+  - Slide 8: Step-by-Step Mentor Live Demo Script
 
 ---
 

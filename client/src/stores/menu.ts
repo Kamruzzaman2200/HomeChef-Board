@@ -56,10 +56,12 @@ export const useMenuStore = defineStore('menu', () => {
   }
 
   async function toggleAvailability(id: string) {
-    const item = items.value.find((i) => i.id === id);
-    if (item) {
-      return await updateItem(id, { available: !item.available });
+    const updated = await api.toggleMenuItem(id);
+    const index = items.value.findIndex((i) => i.id === id);
+    if (index !== -1) {
+      items.value[index] = updated;
     }
+    return updated;
   }
 
   async function removeItem(id: string) {

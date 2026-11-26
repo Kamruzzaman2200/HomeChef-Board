@@ -10,7 +10,9 @@ router.get('/:id', MenuController.getById);
 
 // Kitchen chef administration routes
 router.post('/', requireAdmin, MenuController.create);
+router.put('/:id', requireAdmin, MenuController.update);
 router.patch('/:id', requireAdmin, MenuController.update);
+router.patch('/:id/toggle', requireAdmin, MenuController.toggle);
 router.delete('/:id', requireAdmin, MenuController.delete);
 
 export default router;

@@ -66,4 +66,21 @@ export class AuthController {
       next(err);
     }
   }
+
+  static async demoSwitch(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const targetRole = (req.body.role as 'ADMIN' | 'CUSTOMER') || 'CUSTOMER';
+      const user = {
+        id: targetRole === 'ADMIN' ? 'u-chef-01' : 'u-cust-01',
+        name: targetRole === 'ADMIN' ? 'Chef Sarah Jenkins' : 'David Miller',
+        email: targetRole === 'ADMIN' ? 'chef@homechef.local' : 'david.miller@gmail.com',
+        role: targetRole,
+      };
+
+      req.session.user = user;
+      res.json(user);
+    } catch (err) {
+      next(err);
+    }
+  }
 }

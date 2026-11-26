@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
 import Card from '@/components/ui/Card.vue';
-import { ChefHat, ShieldCheck, User } from 'lucide-vue-next';
+import { ChefHat, ShieldCheck, User, AlertCircle } from 'lucide-vue-next';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -13,16 +13,24 @@ const authStore = useAuthStore();
 const email = ref('chef@homechef.local');
 const password = ref('password123');
 const loading = ref(false);
+const errorMsg = ref('');
 
 async function handleLogin() {
+  if (!email.value.trim()) {
+    errorMsg.value = 'Please enter your email address.';
+    return;
+  }
   loading.value = true;
+  errorMsg.value = '';
   try {
-    const user = await authStore.login(email.value, password.value);
+    const user = await authStore.login(email.value.trim(), password.value);
     if (user.role === 'ADMIN') {
-      router.push('/admin/daily-board');
+      await router.push('/admin/daily-board');
     } else {
-      router.push('/my-orders');
+      await router.push('/my-orders');
     }
+  } catch (err: any) {
+    errorMsg.value = err?.message || 'Login failed. Please check your credentials.';
   } finally {
     loading.value = false;
   }
@@ -30,11 +38,13 @@ async function handleLogin() {
 
 function quickLoginAdmin() {
   email.value = 'chef@homechef.local';
+  password.value = 'password123';
   handleLogin();
 }
 
 function quickLoginCustomer() {
   email.value = 'david.miller@gmail.com';
+  password.value = 'password123';
   handleLogin();
 }
 </script>
@@ -55,7 +65,7 @@ function quickLoginCustomer() {
       <!-- Quick Demo Credentials Box -->
       <div class="bg-kitchen-50 border border-kitchen-200 rounded-xl p-3 text-xs text-stone-700 space-y-2">
         <span class="font-bold text-kitchen-900 block uppercase tracking-wider text-[10px]">
-          Quick Demo Accounts
+          Quick Demo Accounts (1-Click Login)
         </span>
         <div class="grid grid-cols-2 gap-2">
           <button
@@ -82,6 +92,12 @@ function quickLoginCustomer() {
             <div class="text-[10px] text-stone-600 truncate">david.miller@gmail.com</div>
           </button>
         </div>
+      </div>
+
+      <!-- Error Alert -->
+      <div v-if="errorMsg" class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+        <AlertCircle class="w-4 h-4 shrink-0 text-rose-600" />
+        <span>{{ errorMsg }}</span>
       </div>
 
       <!-- Form Card -->

@@ -1,4 +1,4 @@
-import { MenuItem, Order, OrderStatus, CreateOrderPayload, DashboardStats, User } from '@/types';
+import { MenuItem, Order, OrderStatus, CreateOrderPayload, DashboardStats, User, Role } from '@/types';
 import { mockMenuItems, mockOrders, mockUsers } from './mockData';
 
 // Local storage keys for mock persistence
@@ -18,12 +18,20 @@ function initLocalStorage() {
     localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(mockOrders));
   }
   if (!localStorage.getItem(STORAGE_KEYS.USER)) {
-    // Default to the admin for easy previewing of kitchen dashboard
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(mockUsers[0]));
   }
 }
 
 initLocalStorage();
+
+function getStoredUser(): User | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.USER);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 function getStoredMenu(): MenuItem[] {
   try {
@@ -51,32 +59,179 @@ function setStoredOrders(orders: Order[]) {
   localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
 }
 
-// API Service Interface with fallback
+function getAuthHeaders(): HeadersInit {
+  const user = getStoredUser();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (user) {
+    headers['x-demo-user-id'] = user.id;
+    headers['x-demo-user-role'] = user.role;
+  }
+  return headers;
+}
+
+// API Service Interface with dual-mode server & mock fallback
 export const api = {
-  // Menu APIs
-  async getMenuItems(): Promise<MenuItem[]> {
+  // ==========================================
+  // Auth APIs
+  // ==========================================
+  async login(email: string, password?: string): Promise<User> {
     try {
-      const res = await fetch('/api/menu');
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: email.trim(), password: password || 'password123' }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const data = await res.json().catch(() => null);
+      // Only throw if user explicitly entered wrong credentials on a working database
+      if (data?.error && data.error === 'Invalid email or password') {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      if (err?.message === 'Invalid email or password') throw err;
+      // Fallback to local demo credentials
+    }
+
+    const emailTrim = email.trim().toLowerCase();
+    const found = mockUsers.find((u) => u.email.toLowerCase() === emailTrim);
+    if (found) return found;
+
+    return {
+      id: `u-${Date.now()}`,
+      name: email.split('@')[0],
+      email: emailTrim,
+      role: emailTrim.includes('admin') || emailTrim.includes('chef') ? 'ADMIN' : 'CUSTOMER',
+      createdAt: new Date().toISOString(),
+    };
+  },
+
+  async register(data: { name: string; email: string; phone?: string; role?: Role; password?: string }): Promise<User> {
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email.trim(),
+          phone: data.phone || '',
+          password: data.password || 'password123',
+          role: data.role || 'CUSTOMER',
+        }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const errData = await res.json().catch(() => null);
+      if (errData?.error && errData.error.includes('already exists')) {
+        throw new Error(errData.error);
+      }
+    } catch (err: any) {
+      if (err?.message?.includes('already exists')) throw err;
+      // fallback
+    }
+
+    return {
+      id: `u-${Date.now()}`,
+      name: data.name,
+      email: data.email.trim(),
+      phone: data.phone,
+      role: data.role || 'CUSTOMER',
+      createdAt: new Date().toISOString(),
+    };
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {
+      // ignore
+    }
+  },
+
+  async getMe(): Promise<User | null> {
+    try {
+      const res = await fetch('/api/auth/me', {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // fallback
+    }
+    return getStoredUser();
+  },
+
+  async demoSwitch(role: Role): Promise<User> {
+    try {
+      const res = await fetch('/api/auth/demo-switch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ role }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // fallback
+    }
+    return role === 'ADMIN' ? mockUsers[0] : mockUsers[1];
+  },
+
+  // ==========================================
+  // Menu APIs
+  // ==========================================
+  async getMenuItems(params?: { category?: string; availableOnly?: boolean }): Promise<MenuItem[]> {
+    try {
+      const query = new URLSearchParams();
+      if (params?.category && params.category !== 'All') query.set('category', params.category);
+      if (params?.availableOnly) query.set('available', 'true');
+      const url = `/api/menu${query.toString() ? `?${query.toString()}` : ''}`;
+
+      const res = await fetch(url, { credentials: 'include' });
       if (res.ok) {
         return await res.json();
       }
     } catch {
       // fallback to mock
     }
-    return getStoredMenu();
+
+    let items = getStoredMenu();
+    if (params?.category && params.category !== 'All') {
+      items = items.filter((i) => i.category === params.category);
+    }
+    if (params?.availableOnly) {
+      items = items.filter((i) => i.available && !i.isArchived);
+    }
+    return items;
   },
 
   async createMenuItem(item: Omit<MenuItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<MenuItem> {
     try {
       const res = await fetch('/api/menu', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
+        credentials: 'include',
         body: JSON.stringify(item),
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
+      const data = await res.json().catch(() => null);
+      if (data?.error) throw new Error(data.error);
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('fetch')) throw err;
       // fallback
     }
 
@@ -96,13 +251,17 @@ export const api = {
     try {
       const res = await fetch(`/api/menu/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
+        credentials: 'include',
         body: JSON.stringify(updates),
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
+      const data = await res.json().catch(() => null);
+      if (data?.error) throw new Error(data.error);
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('fetch')) throw err;
       // fallback
     }
 
@@ -114,9 +273,36 @@ export const api = {
     return current[index];
   },
 
+  async toggleMenuItem(id: string): Promise<MenuItem> {
+    try {
+      const res = await fetch(`/api/menu/${id}/toggle`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // fallback
+    }
+
+    const current = getStoredMenu();
+    const item = current.find((i) => i.id === id);
+    if (!item) throw new Error('Menu item not found');
+    item.available = !item.available;
+    item.updatedAt = new Date().toISOString();
+    setStoredMenu(current);
+    return item;
+  },
+
   async deleteMenuItem(id: string): Promise<void> {
     try {
-      const res = await fetch(`/api/menu/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/menu/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
       if (res.ok) return;
     } catch {
       // fallback
@@ -125,11 +311,16 @@ export const api = {
     setStoredMenu(current);
   },
 
+  // ==========================================
   // Order APIs
-  async getOrders(params?: { status?: string; date?: string; customerId?: string }): Promise<Order[]> {
+  // ==========================================
+  async getOrders(params?: { status?: string; date?: string; customerId?: string; search?: string }): Promise<Order[]> {
     try {
       const query = new URLSearchParams(params as Record<string, string>).toString();
-      const res = await fetch(`/api/orders?${query}`);
+      const res = await fetch(`/api/orders?${query}`, {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         return await res.json();
       }
@@ -138,18 +329,30 @@ export const api = {
     }
 
     let orders = getStoredOrders();
-    if (params?.status) {
+    if (params?.status && params.status !== 'ALL') {
       orders = orders.filter((o) => o.status === params.status);
     }
     if (params?.customerId) {
       orders = orders.filter((o) => o.userId === params.customerId);
+    }
+    if (params?.search) {
+      const s = params.search.toLowerCase();
+      orders = orders.filter(
+        (o) =>
+          o.id.toLowerCase().includes(s) ||
+          o.user?.name.toLowerCase().includes(s) ||
+          o.items.some((i) => i.itemNameSnapshot.toLowerCase().includes(s))
+      );
     }
     return orders;
   },
 
   async getOrderById(id: string): Promise<Order | null> {
     try {
-      const res = await fetch(`/api/orders/${id}`);
+      const res = await fetch(`/api/orders/${id}`, {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         return await res.json();
       }
@@ -165,13 +368,17 @@ export const api = {
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
+      const data = await res.json().catch(() => null);
+      if (data?.error) throw new Error(data.error);
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('fetch')) throw err;
       // fallback
     }
 
@@ -179,7 +386,7 @@ export const api = {
     let total = 0;
     const orderItems = payload.items.map((item) => {
       const menuItem = menu.find((m) => m.id === item.menuItemId);
-      const unitPrice = menuItem ? menuItem.price : 10;
+      const unitPrice = menuItem ? Number(menuItem.price) : 10;
       const itemNameSnapshot = menuItem ? menuItem.name : 'Custom Kitchen Item';
       total += unitPrice * item.quantity;
       return {
@@ -191,6 +398,9 @@ export const api = {
         menuItem,
       };
     });
+
+    // Packaging fee
+    total += 1.50;
 
     const newOrder: Order = {
       id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -219,28 +429,102 @@ export const api = {
     try {
       const res = await fetch(`/api/orders/${id}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
+        credentials: 'include',
         body: JSON.stringify({ status }),
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
+      const data = await res.json().catch(() => null);
+      if (data?.error) throw new Error(data.error);
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('fetch')) throw err;
       // fallback
     }
 
     const orders = getStoredOrders();
     const index = orders.findIndex((o) => o.id === id);
     if (index === -1) throw new Error('Order not found');
+
+    // Rule: prevent changing status of completed or cancelled orders
+    if (orders[index].status === 'COMPLETED' || orders[index].status === 'CANCELLED') {
+      if (orders[index].status !== status) {
+        throw new Error(`Cannot change status of a ${orders[index].status} order. It is locked.`);
+      }
+    }
+
     orders[index] = { ...orders[index], status, updatedAt: new Date().toISOString() };
     setStoredOrders(orders);
     return orders[index];
   },
 
-  // Dashboard Stats
+  async updateOrderNotes(id: string, notes: string): Promise<Order> {
+    try {
+      const res = await fetch(`/api/orders/${id}/notes`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({ notes }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const data = await res.json().catch(() => null);
+      if (data?.error) throw new Error(data.error);
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('fetch')) throw err;
+      // fallback
+    }
+
+    const orders = getStoredOrders();
+    const index = orders.findIndex((o) => o.id === id);
+    if (index === -1) throw new Error('Order not found');
+    orders[index] = { ...orders[index], notes, updatedAt: new Date().toISOString() };
+    setStoredOrders(orders);
+    return orders[index];
+  },
+
+  async submitOrderFeedback(id: string, rating: number, note?: string): Promise<Order> {
+    try {
+      const res = await fetch(`/api/orders/${id}/feedback`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({ rating, note }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const data = await res.json().catch(() => null);
+      if (data?.error) throw new Error(data.error);
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('fetch')) throw err;
+      // fallback
+    }
+
+    const orders = getStoredOrders();
+    const index = orders.findIndex((o) => o.id === id);
+    if (index === -1) throw new Error('Order not found');
+    orders[index] = {
+      ...orders[index],
+      feedbackRating: rating,
+      feedbackNote: note || null,
+      updatedAt: new Date().toISOString(),
+    };
+    setStoredOrders(orders);
+    return orders[index];
+  },
+
+  // ==========================================
+  // Dashboard Analytics
+  // ==========================================
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      const res = await fetch('/api/dashboard/summary');
+      const res = await fetch('/api/dashboard/summary', {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         return await res.json();
       }

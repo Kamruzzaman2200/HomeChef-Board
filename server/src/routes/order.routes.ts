@@ -12,5 +12,7 @@ router.get('/my-orders', requireAuth, OrderController.getMyOrders);
 router.get('/', requireAuth, OrderController.getAll);
 router.get('/:id', requireAuth, OrderController.getById);
 router.patch('/:id/status', requireAuth, OrderController.updateStatus);
+router.patch('/:id/notes', requireAuth, OrderController.updateNotes);
+router.patch('/:id/feedback', requireAuth, OrderController.submitFeedback);
 
 export default router;

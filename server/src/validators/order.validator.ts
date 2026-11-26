@@ -25,5 +25,16 @@ export const updateOrderStatusSchema = z.object({
   ]),
 });
 
+export const updateOrderNotesSchema = z.object({
+  notes: z.string().default(''),
+});
+
+export const orderFeedbackSchema = z.object({
+  rating: z.number().int().min(1).max(5),
+  note: z.string().optional(),
+});
+
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
+export type UpdateOrderNotesInput = z.infer<typeof updateOrderNotesSchema>;
+export type OrderFeedbackInput = z.infer<typeof orderFeedbackSchema>;
