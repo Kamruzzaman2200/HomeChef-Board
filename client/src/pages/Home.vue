@@ -61,7 +61,7 @@ onMounted(async () => {
 
           <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white">
             Handcrafted Meals &amp; Breads, <br />
-            <span class="text-kitchen-200 underline decoration-terracotta-400 decoration-wavy decoration-2">Prepared Fresh Daily</span>.
+            <span class="text-kitchen-200">Prepared Fresh Daily</span>.
           </h1>
 
           <p class="text-stone-300 text-sm sm:text-base leading-relaxed max-w-2xl">
@@ -153,7 +153,7 @@ onMounted(async () => {
                   </span>
                   <button
                     @click="router.push('/order')"
-                    class="text-xs font-bold text-white hover:text-kitchen-100 underline decoration-terracotta-400 cursor-pointer"
+                    class="text-xs font-bold text-white hover:text-kitchen-100 hover:underline cursor-pointer"
                   >
                     Order Batch &rarr;
                   </button>
