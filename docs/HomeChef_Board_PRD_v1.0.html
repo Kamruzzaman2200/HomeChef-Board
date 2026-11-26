@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>HomeChef Board - Product Requirements Document</title>
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 14mm 16mm 14mm;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.5;
+    color: #1e293b;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    font-size: 18pt;
+    color: #064e3b;
+    border-bottom: 2px solid #059669;
+    padding-bottom: 6px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-size: 13pt;
+    color: #047857;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    page-break-after: avoid;
+    border-left: 3px solid #10b981;
+    padding-left: 8px;
+  }
+  h3 {
+    font-size: 11pt;
+    color: #065f46;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    page-break-after: avoid;
+  }
+  p {
+    margin: 6px 0;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+    font-size: 9pt;
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background-color: #064e3b;
+    color: #ffffff;
+    font-weight: 600;
+  }
+  tr:nth-child(even) {
+    background-color: #f8fafc;
+  }
+  code {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 8.5pt;
+    font-family: Consolas, 'Courier New', monospace;
+  }
+  pre {
+    background-color: #0f172a;
+    color: #f8fafc;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 8pt;
+    overflow-x: auto;
+    page-break-inside: avoid;
+    font-family: Consolas, 'Courier New', monospace;
+    white-space: pre-wrap;
+  }
+  pre code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+  }
+  blockquote {
+    border-left: 3px solid #059669;
+    background-color: #ecfdf5;
+    margin: 8px 0;
+    padding: 6px 12px;
+    color: #065f46;
+  }
+  hr {
+    border: none;
+    border-top: 1px dashed #cbd5e1;
+    margin: 18px 0;
+  }
+  strong {
+    color: #0f172a;
+  }
+  ul, ol {
+    margin: 6px 0;
+    padding-left: 20px;
+  }
+  li {
+    margin-bottom: 3px;
+  }
+</style>
+</head>
+<body>
+<h1>TriFin-Loop R&amp;D</h1>
+<h2>SOFTWARE ENGINEERING INTERNSHIP / PROJECT PRD</h2>
+<h3>Full-Stack Internship Project | Implemented System Specification</h3>
+<hr />
+<p><strong>Page 1 of 10</strong></p>
+<h1>PROJECT | PRODUCT REQUIREMENTS DOCUMENT</h1>
+<p><strong>HomeChef Board – Small Kitchen Order Prep Management System | PRD v1.0 | November 2026</strong></p>
+<hr />
+<h2>Document Control</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Organization</strong></td>
+<td>TriFin-Loop R&amp;D</td>
+</tr>
+<tr>
+<td><strong>Project / Owner</strong></td>
+<td>HomeChef Board / Kamruzzaman (Full-Stack Intern)</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Implemented and deployed; submitted for supervisor review</td>
+</tr>
+<tr>
+<td><strong>Scope</strong></td>
+<td>Home-based kitchen pre-order management, preparation tracking, and daily workload board</td>
+</tr>
+<tr>
+<td><strong>Delivery</strong></td>
+<td>Internship MVP; fully functional full-stack web application</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Executive Summary</h2>
+<p>HomeChef Board is a full-stack web application that helps a small home-based kitchen organize customer pre-orders, track preparation status through a 6-stage Kanban pipeline, and manage daily workload. Customers can browse the artisan menu, schedule pickup or delivery pre-orders, and track their order status in real time. The Kitchen Admin manages the menu catalog, confirms incoming orders, advances preparation stages, and monitors daily throughput analytics. The system deliberately avoids payment gateway and delivery-map complexity, focusing instead on the core preparation workflow that home chefs need most.</p>
+<h2>What This Document Covers</h2>
+<p>This PRD documents the implemented HomeChef Board system: its problem context, user roles, MVP feature inventory, functional and non-functional requirements, user stories, process flows, screen specifications, database architecture, API design, test plan, and execution timeline. All features described have been built, tested, and deployed to GitHub.</p>
+<h2>Version History</h2>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1</td>
+<td>Problem definition, feature outline, and database design</td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>Core implementation: authentication, menu CRUD, order workflow, and kitchen board</td>
+</tr>
+<tr>
+<td>1.0</td>
+<td>Complete MVP with analytics dashboard, BDT pricing, test suite, and documentation</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>Page 2 of 10</strong></p>
+<h1>01 | PROBLEM, USERS &amp; PRODUCT GOALS</h1>
+<p><em>Define why the product exists and how the reviewer can judge its usefulness.</em></p>
+<h2>Problem Statement</h2>
+<p>Home-based chefs and artisanal micro-bakers receive pre-orders through scattered channels — WhatsApp messages, Instagram DMs, phone calls, and SMS. Orders contain different menu items, varying quantities, and different pickup or delivery time slots. Without a centralized system, chefs lose track of what has been confirmed, what is currently being prepared in the oven, and what is bagged and ready at the pickup counter. Traditional POS systems impose unnecessary complexity with payment gateways and delivery GPS maps that home kitchens do not need.</p>
+<p>HomeChef Board solves this by providing a clean, back-office kitchen workflow system that organizes customer scheduled pre-orders into a visual preparation board with informational server-side pricing, historical receipts, and batch throughput analytics.</p>
+<h2>Target Users</h2>
+<table>
+<thead>
+<tr>
+<th>Persona</th>
+<th>Need and Primary Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Customer (User)</strong></td>
+<td>Browse the artisan menu, submit a scheduled pre-order with pickup/delivery preference, and track preparation status until ready for collection.</td>
+</tr>
+<tr>
+<td><strong>Kitchen Admin (Chef)</strong></td>
+<td>Manage menu items and pricing, confirm incoming orders, advance preparation stages on the daily Kanban board, and monitor daily revenue and workload metrics.</td>
+</tr>
+</tbody>
+</table>
+<h2>Implemented Outcomes and Success Measures</h2>
+<ul>
+<li><strong>100% of test orders</strong> can be submitted with required fields, validated server-side, and displayed in the correct customer order history with accurate BDT totals.</li>
+<li>A Kitchen Admin can move an order through all 6 lifecycle stages (<code>REQUESTED</code> → <code>CONFIRMED</code> → <code>PREPARING</code> → <code>READY</code> → <code>COMPLETED</code> or <code>CANCELLED</code>) with timestamped status records.</li>
+<li>A customer <strong>cannot</strong> access another customer's orders by manipulating URL parameters; server-side ownership checks enforce access control.</li>
+<li>Historical price snapshots guarantee that past receipts remain accurate regardless of future menu price changes.</li>
+</ul>
+<h2>Assumptions Validated</h2>
+<p>The system uses demonstration accounts for testing; no real payment processing or delivery mapping is integrated. All pricing is informational in Bangladeshi Taka (৳). The application operates in dual-mode: full-stack with Neon PostgreSQL, or standalone with browser localStorage fallback for offline demo scenarios.</p>
+<hr />
+<p><strong>Page 3 of 10</strong></p>
+<h1>02 | SCOPE &amp; MVP FEATURE INVENTORY</h1>
+<p><em>Clear boundaries prevent scope creep and ensure a deliverable, testable application.</em></p>
+<h2>In Scope — Must Have (Implemented)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>MVP Capability</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F01</td>
+<td>Register and sign in with demonstration accounts; role-based permissions (Customer / Admin)</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>F02</td>
+<td>Menu CRUD for Kitchen Admin: create, edit, archive dishes with name, category, price, image, and availability toggle</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>F03</td>
+<td>Customer creates a pre-order selecting one or more menu items with quantities, pickup/delivery preference, fulfill date, time slot, and address/buzzer notes</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>F04</td>
+<td>Server-side order total calculation with packaging fee (৳ 50); never trusts client-computed amounts</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>F05</td>
+<td>6-stage order status workflow: <code>REQUESTED</code> → <code>CONFIRMED</code> → <code>PREPARING</code> → <code>READY</code> → <code>COMPLETED</code> / <code>CANCELLED</code></td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>F06</td>
+<td>Daily Order Board (Kanban pipeline) with date filtering, status columns, search, and 1-click stage transitions</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>F07</td>
+<td>Kitchen Dashboard with live analytics: today's gross revenue, active prep batches, ready count, fulfillment breakdown</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>F08</td>
+<td>Filter orders by date range, status, and search by customer name</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>F09</td>
+<td>Historical price snapshots: <code>OrderItem</code> captures dish name and unit price at moment of purchase</td>
+<td>✅ Done</td>
+</tr>
+</tbody>
+</table>
+<h2>Should Have — Implemented Enhancements</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Enhancement</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E01</td>
+<td>Printable kitchen ticket (thermal-printer-friendly <code>window.print()</code> layout)</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>E02</td>
+<td>Customer feedback: 1–5 star rating and review note on completed orders</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>E03</td>
+<td>1-click demo role switcher in navbar (instant Chef ↔ Customer toggle without re-login)</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>E04</td>
+<td>Menu availability toggle ("Available" / "Sold Out") to prevent kitchen overbooking</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>E05</td>
+<td>Dual-mode persistence: Neon PostgreSQL or automatic localStorage fallback</td>
+<td>✅ Done</td>
+</tr>
+</tbody>
+</table>
+<h2>Out of Scope</h2>
+<p>Online payment gateway integration, real delivery GPS/map routing, SMS/email notifications, AI-powered order classification, native mobile apps, and production data migration.</p>
+<h2>Acceptance Boundary</h2>
+<p>The MVP is complete when the full customer-to-kitchen-to-customer workflow is demonstrable using seeded test accounts: a customer can browse the menu, place a pre-order, and track its status; the chef can confirm, prepare, and complete the order on the daily board; and the customer can submit feedback on the completed order.</p>
+<hr />
+<p><strong>Page 4 of 10</strong></p>
+<h1>03 | USER STORIES &amp; PROCESS FLOW</h1>
+<p><em>Translate user goals into scenarios with visible start and end conditions.</em></p>
+<h2>Core User Stories</h2>
+<ul>
+<li><strong>US-01</strong>: As a customer, I want to browse the artisan menu so that I can choose dishes for my pre-order without needing to message the chef directly.</li>
+<li><strong>US-02</strong>: As a customer, I want to schedule a pre-order with a pickup time slot so that my food is freshly prepared when I arrive.</li>
+<li><strong>US-03</strong>: As a customer, I want to track my order's preparation status so that I know when it moves from the oven to the counter.</li>
+<li><strong>US-04</strong>: As a customer, I want to leave a star rating and review after my order is completed so that the chef receives feedback.</li>
+<li><strong>US-05</strong>: As a Kitchen Admin, I want to view all incoming orders on a daily board so that I can plan my preparation schedule.</li>
+<li><strong>US-06</strong>: As a Kitchen Admin, I want to advance orders through preparation stages with a single click so that the board always reflects the kitchen's real state.</li>
+<li><strong>US-07</strong>: As a Kitchen Admin, I want to manage my menu items (add, edit, archive, toggle availability) so that only currently offered dishes appear to customers.</li>
+<li><strong>US-08</strong>: As a Kitchen Admin, I want to see today's revenue and active batch counts so that I can gauge my daily workload.</li>
+</ul>
+<h2>Example Journey: Pre-Order Lifecycle</h2>
+<ol>
+<li><strong>Customer signs in</strong> → navigates to the menu page → adds 2× Artisan Sourdough Boule and 1× Braised Beef Short Ribs to the cart.</li>
+<li><strong>Customer schedules pre-order</strong> → selects today's date, 12:30 PM pickup window, Curbside Pickup, and adds a note ("Silver Toyota RAV4, parking bay #2") → submits.</li>
+<li><strong>System validates</strong> → server fetches current menu prices from the database, calculates subtotal (2 × ৳450 + 1 × ৳1,450 = ৳2,350), adds ৳50 packaging fee, and stores total = ৳2,400 with historical price snapshots.</li>
+<li><strong>Order appears</strong> on the Kitchen Admin's Daily Board in the "New Requested" column with status <code>REQUESTED</code>.</li>
+<li><strong>Chef confirms</strong> → clicks "Confirm" → order moves to <code>CONFIRMED</code> column.</li>
+<li><strong>Chef begins prep</strong> → clicks "Start Prep" → order moves to <code>PREPARING</code> column.</li>
+<li><strong>Chef marks ready</strong> → clicks "Mark Ready" → order moves to <code>READY</code> column. Customer sees "Ready for Pickup" on their tracking page.</li>
+<li><strong>Customer picks up</strong> → Chef clicks "Complete" → order moves to <code>COMPLETED</code>.</li>
+<li><strong>Customer leaves review</strong> → submits a 5-star rating with a note ("Incredible sourdough!").</li>
+</ol>
+<h2>Lifecycle States and Exceptions</h2>
+<p><strong>Defined states</strong>: <code>REQUESTED</code>, <code>CONFIRMED</code>, <code>PREPARING</code>, <code>READY</code>, <code>COMPLETED</code>, <code>CANCELLED</code>.</p>
+<p>Once an order reaches <code>COMPLETED</code> or <code>CANCELLED</code>, status transitions are locked. Only Kitchen Admin notes can be updated on completed orders. Invalid form submissions remain unsaved with field-level validation error messages.</p>
+<hr />
+<p><strong>Page 5 of 10</strong></p>
+<h1>04 | FUNCTIONAL REQUIREMENTS</h1>
+<p><em>Use traceable IDs, actor, behavior, and testable acceptance criteria.</em></p>
+<h2>FR-01 — Authentication &amp; Role Management | Must</h2>
+<p><strong>Actor</strong>: Any visitor. <strong>Trigger</strong>: Submit on Login or Register form.
+<strong>Behavior</strong>: The system authenticates credentials using bcrypt password verification and creates a server-side session. Role-based routing directs Admin users to the Kitchen Dashboard and Customer users to the Menu storefront. Session middleware protects all authenticated routes.</p>
+<p><strong>Acceptance</strong>: Given valid credentials, the user is signed in and redirected by role. Given invalid credentials, an error message is displayed and no session is created. Demo quick-login buttons populate credentials with a single click.</p>
+<h2>FR-02 — Menu CRUD &amp; Availability | Must</h2>
+<p><strong>Actor</strong>: Kitchen Admin. <strong>Trigger</strong>: Create, Edit, Archive, or Toggle actions in Menu Management.
+<strong>Behavior</strong>: Admin can create dishes with name, description, category, price (BDT), and image URL. Dishes can be edited, soft-archived (never hard-deleted if referenced in prior orders), and toggled between "Available" and "Sold Out" to prevent overbooking.</p>
+<p><strong>Acceptance</strong>: Given a valid dish form, the item appears in the menu catalog. Given a toggle action, the availability status updates immediately. Archived dishes do not appear on the customer menu but remain linked to historical orders.</p>
+<h2>FR-03 — Pre-Order Creation with Server-Side Totals | Must</h2>
+<p><strong>Actor</strong>: Authenticated Customer. <strong>Trigger</strong>: Submit on Place Pre-Order form.
+<strong>Behavior</strong>: The server validates all menu item IDs and quantities, fetches current prices from the database, calculates the total server-side (never trusts client amounts), adds a ৳50 packaging fee, and inserts the order and order items atomically within a Prisma <code>$transaction()</code>. Historical price snapshots (<code>itemNameSnapshot</code>, <code>unitPrice</code>) are captured at the moment of purchase.</p>
+<p><strong>Acceptance</strong>: Given valid items and quantities, exactly one order is created with accurate server-calculated total. Given an invalid menu item ID, the transaction rolls back and an error is returned. Given a sold-out item, the order is rejected.</p>
+<h2>FR-04 — Order Status Workflow &amp; Kitchen Board | Must</h2>
+<p><strong>Actor</strong>: Kitchen Admin. <strong>Trigger</strong>: 1-click stage transition on the Daily Order Board.
+<strong>Behavior</strong>: The admin advances orders through 6 stages: <code>REQUESTED</code> → <code>CONFIRMED</code> → <code>PREPARING</code> → <code>READY</code> → <code>COMPLETED</code> (or <code>CANCELLED</code>). The board displays orders grouped by status column with date filtering, search, and batch counts. Completed/cancelled orders cannot be re-advanced; only admin notes can be edited.</p>
+<p><strong>Acceptance</strong>: Given a valid transition, the order moves to the next column. Given a completed order, status change is denied but notes update succeeds.</p>
+<h2>FR-05 — Authorization &amp; Access Control | Must</h2>
+<p>Every protected API route validates authenticated identity and role on the server, independent of frontend UI hiding. Customers can only view their own orders. Admin-only routes (<code>POST /api/menu</code>, <code>PATCH /api/orders/:id/status</code>) reject non-admin sessions with 403 Forbidden.</p>
+<h2>Traceability</h2>
+<p>FR-01 maps to screens W-01, API Auth routes, tests T-01/T-02. FR-03 maps to W-05, API Orders, tests T-05/T-06. FR-04 maps to W-03, API Status, tests T-03/T-04.</p>
+<hr />
+<p><strong>Page 6 of 10</strong></p>
+<h1>05 | NON-FUNCTIONAL REQUIREMENTS</h1>
+<p><em>State measurable targets and how they are verified.</em></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requirement and Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NFR-01 Security</strong></td>
+<td>Passwords hashed with bcrypt (<code>cost=10</code>). Server-side session authentication via <code>express-session</code>. Role-based middleware (<code>requireAuth</code>, <code>requireAdmin</code>) on all protected routes. Prisma ORM uses parameterized prepared statements to prevent SQL injection. Verified through role tampering and direct API access tests.</td>
+</tr>
+<tr>
+<td><strong>NFR-02 Performance</strong></td>
+<td>Menu and order list endpoints respond within 2 seconds for the demo dataset. Vite production build optimizes client assets to 234 KB gzipped JS + 40 KB CSS. Verified with browser network timing.</td>
+</tr>
+<tr>
+<td><strong>NFR-03 Usability</strong></td>
+<td>Responsive design tested from 360px mobile to 1440px desktop. Tailwind CSS utility classes ensure consistent spacing and typography. 1-click demo shortcuts reduce onboarding friction. Navigation is simple for first-time users.</td>
+</tr>
+<tr>
+<td><strong>NFR-04 Reliability</strong></td>
+<td>Prisma <code>$transaction()</code> ensures atomic order creation — failed operations do not create partial records. Dual-mode fallback guarantees the app remains functional even when the remote database is unreachable.</td>
+</tr>
+<tr>
+<td><strong>NFR-05 Maintainability</strong></td>
+<td>Clean monorepo structure separating <code>client/</code> and <code>server/</code>. MVC pattern: routes → controllers → services → Prisma ORM. Zod schemas for runtime request validation. TypeScript end-to-end. Environment secrets excluded from Git via <code>.gitignore</code>. README documents complete setup.</td>
+</tr>
+<tr>
+<td><strong>NFR-06 Data Integrity</strong></td>
+<td>Historical price snapshots in <code>OrderItem</code> preserve receipt accuracy. Foreign key constraints with cascading deletion rules maintain referential integrity. Synthetic demo data only — no real customer PII.</td>
+</tr>
+</tbody>
+</table>
+<h2>Dependencies and Constraints</h2>
+<p>Development requires Node.js v18+, npm v9+, and optionally a Neon PostgreSQL instance. The demo uses synthetic test accounts and seeded menu data. All pricing is informational in BDT (৳) without real payment processing.</p>
+<hr />
+<p><strong>Page 7 of 10</strong></p>
+<h1>06 | UX, SCREENS &amp; WIREFRAMES</h1>
+<p><em>Implemented screen specifications with required elements and behaviors.</em></p>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Required Elements / Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>W-01 Login / Register</strong></td>
+<td>Email and password fields, inline validation errors, server-side session creation, role-based redirect (Admin → Dashboard, Customer → Menu). <strong>1-Click Quick Demo Login</strong> buttons for Chef Admin and Customer personas.</td>
+</tr>
+<tr>
+<td><strong>W-02 Home / Menu Storefront</strong></td>
+<td>Hero banner showcasing the kitchen identity. Artisan menu cards with dish image, name, category badge, BDT price tag, description, and "+ Add to Order" action. Category filter tabs (All, Bakery, Mains, Starters, Desserts, Family Packs).</td>
+</tr>
+<tr>
+<td><strong>W-03 Daily Kitchen Prep Board (Kanban)</strong></td>
+<td>5-column interactive pipeline: Requested → Confirmed → Preparing → Ready → Completed. Order tickets show customer name, item count, fulfill time, and total. 1-click stage advance buttons. Date selector (Today / All / Custom). Search by customer name. Batch counts per column.</td>
+</tr>
+<tr>
+<td><strong>W-04 Kitchen Analytics Dashboard</strong></td>
+<td>Live metric cards: today's gross revenue (৳), active in-oven prep batches, counter-ready orders, completed count. Fulfillment breakdown (Pickup vs Delivery). Recent orders table.</td>
+</tr>
+<tr>
+<td><strong>W-05 Place Pre-Order</strong></td>
+<td>Cart summary with item names, quantities, unit prices, subtotal, packaging fee, and grand total in BDT. Date picker, time slot selector, fulfillment toggle (Curbside Pickup / Courier Delivery), address/buzzer note input, and Submit button with confirmation.</td>
+</tr>
+<tr>
+<td><strong>W-06 My Orders / Order Detail</strong></td>
+<td>Order list with status badges, date, total, and item preview. Expandable detail view with full itemized receipt (snapshotted names and prices), live status stepper, chef notes, <strong>Print Kitchen Ticket</strong> button, and <strong>Customer Feedback</strong> form (1–5 stars + review note) for completed orders.</td>
+</tr>
+<tr>
+<td><strong>W-07 Menu Management (Admin)</strong></td>
+<td>Dish catalog table/grid with name, category, price (BDT), availability status. Modal editor for creating/editing dishes. Instant "Available / Sold Out" toggle switch. Archive action with confirmation.</td>
+</tr>
+</tbody>
+</table>
+<h2>Design Behavior</h2>
+<p>Each screen identifies the user role, main action, and loading/empty/error/success states. Customers never see admin controls. Form submission shows clear success or error feedback. Destructive actions (cancel order, archive dish) require confirmation.</p>
+<h2>Deliverables</h2>
+<p>Six application screenshots are included in <code>/docs/screenshots/</code>: login screen, analytics dashboard, daily prep board, menu management, pre-order form, and order detail ticket.</p>
+<hr />
+<p><strong>Page 8 of 10</strong></p>
+<h1>07 | ARCHITECTURE, DATA &amp; API</h1>
+<p><em>Technical decisions validated through implementation.</em></p>
+<h2>Implemented Architecture</h2>
+<p>Vue 3 frontend (Composition API + Vite + TypeScript) communicates with an Express REST API over HTTP. The API authenticates users via server-side sessions, checks role permissions through middleware, validates request payloads with Zod schemas, and reads/writes PostgreSQL through Prisma ORM. The client includes an automatic localStorage fallback engine for offline demo scenarios.</p>
+<pre><code>┌─────────────────────────────────────────────────┐
+│          Frontend (Vue 3 + Vite + Pinia)        │
+│  Components → Stores → API Service → Router    │
+│            ↓ fallback ↓                         │
+│        localStorage Mock Engine                 │
+└──────────────────────┬──────────────────────────┘
+                       │ REST API (HTTP)
+┌──────────────────────┴──────────────────────────┐
+│      Backend (Node.js + Express + TypeScript)    │
+│  Routes → Middleware → Controllers → Services   │
+│                       ↓                         │
+│              Prisma ORM Client                  │
+└──────────────────────┬──────────────────────────┘
+                       │ Connection Pool + SSL
+┌──────────────────────┴──────────────────────────┐
+│        Neon Serverless PostgreSQL                │
+│  Users | MenuItems | Orders | OrderItems        │
+└─────────────────────────────────────────────────┘
+</code></pre>
+<h2>Core Data Entities (Prisma Schema)</h2>
+<pre><code>User(id, name, email, phone, passwordHash, role:CUSTOMER|ADMIN, createdAt, updatedAt)
+    ↓ 1:N
+Order(id, userId:FK, orderDate, fulfillDate, fulfillTime, fulfillType:PICKUP|DELIVERY,
+      addressNote, status:OrderStatus, total:Decimal, notes, feedbackRating, feedbackNote)
+    ↓ 1:N
+OrderItem(id, orderId:FK, menuItemId:FK|NULL, itemNameSnapshot, quantity, unitPrice:Decimal)
+    ↑ N:1 (Optional)
+MenuItem(id, name, description, category, price:Decimal, image, available, isArchived)
+</code></pre>
+<p><strong>Key design</strong>: <code>OrderItem.itemNameSnapshot</code> and <code>OrderItem.unitPrice</code> freeze the dish name and price at the moment of sale, ensuring historical receipt accuracy even after menu changes.</p>
+<h2>Implemented API Endpoints</h2>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Access</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/auth/register</code></td>
+<td>POST</td>
+<td>Public</td>
+<td>Register a new customer account</td>
+</tr>
+<tr>
+<td><code>/api/auth/login</code></td>
+<td>POST</td>
+<td>Public</td>
+<td>Authenticate with email and password</td>
+</tr>
+<tr>
+<td><code>/api/auth/logout</code></td>
+<td>POST</td>
+<td>Auth</td>
+<td>Destroy the active session</td>
+</tr>
+<tr>
+<td><code>/api/auth/me</code></td>
+<td>GET</td>
+<td>Auth</td>
+<td>Return currently signed-in user profile</td>
+</tr>
+<tr>
+<td><code>/api/auth/demo-switch</code></td>
+<td>POST</td>
+<td>Public</td>
+<td>Quick-switch between Chef and Customer</td>
+</tr>
+<tr>
+<td><code>/api/menu</code></td>
+<td>GET</td>
+<td>Public</td>
+<td>List menu items (supports <code>?category=</code> and <code>?available=</code> filters)</td>
+</tr>
+<tr>
+<td><code>/api/menu/:id</code></td>
+<td>GET</td>
+<td>Public</td>
+<td>Get single menu item details</td>
+</tr>
+<tr>
+<td><code>/api/menu</code></td>
+<td>POST</td>
+<td>Admin</td>
+<td>Create a new menu dish</td>
+</tr>
+<tr>
+<td><code>/api/menu/:id</code></td>
+<td>PUT/PATCH</td>
+<td>Admin</td>
+<td>Update or partially update a dish</td>
+</tr>
+<tr>
+<td><code>/api/menu/:id/toggle</code></td>
+<td>PATCH</td>
+<td>Admin</td>
+<td>Toggle dish availability</td>
+</tr>
+<tr>
+<td><code>/api/menu/:id</code></td>
+<td>DELETE</td>
+<td>Admin</td>
+<td>Soft-archive a dish</td>
+</tr>
+<tr>
+<td><code>/api/orders</code></td>
+<td>GET</td>
+<td>Auth</td>
+<td>List orders (Admin: all; Customer: own; supports filters)</td>
+</tr>
+<tr>
+<td><code>/api/orders/:id</code></td>
+<td>GET</td>
+<td>Auth</td>
+<td>Get order with itemized receipt snapshot</td>
+</tr>
+<tr>
+<td><code>/api/orders</code></td>
+<td>POST</td>
+<td>Customer</td>
+<td>Submit a pre-order with server-calculated total</td>
+</tr>
+<tr>
+<td><code>/api/orders/:id/status</code></td>
+<td>PATCH</td>
+<td>Admin</td>
+<td>Advance order status through the pipeline</td>
+</tr>
+<tr>
+<td><code>/api/orders/:id/notes</code></td>
+<td>PATCH</td>
+<td>Admin</td>
+<td>Update chef preparation notes</td>
+</tr>
+<tr>
+<td><code>/api/orders/:id/feedback</code></td>
+<td>PATCH</td>
+<td>Customer</td>
+<td>Submit 1–5 star rating and review</td>
+</tr>
+<tr>
+<td><code>/api/dashboard/summary</code></td>
+<td>GET</td>
+<td>Admin</td>
+<td>Kitchen KPIs: revenue, batches, ready count</td>
+</tr>
+<tr>
+<td><code>/api/health</code></td>
+<td>GET</td>
+<td>Public</td>
+<td>System status and uptime</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>Page 9 of 10</strong></p>
+<h1>08 | TEST PLAN &amp; TRACEABILITY</h1>
+<p><em>Demonstrate how each important requirement is checked.</em></p>
+<table>
+<thead>
+<tr>
+<th>Test / Requirement</th>
+<th>Steps and Expected Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>T-01 / FR-01</strong></td>
+<td>Valid customer submits registration with required fields; account is created and session is established. ✅ Passed</td>
+</tr>
+<tr>
+<td><strong>T-02 / FR-01</strong></td>
+<td>Invalid email format or password shorter than 6 characters returns field-level validation error; no account is created. ✅ Passed</td>
+</tr>
+<tr>
+<td><strong>T-03 / FR-03</strong></td>
+<td>Valid order payload with menu items and quantities parses cleanly; order appears in customer history with server-calculated total. ✅ Passed</td>
+</tr>
+<tr>
+<td><strong>T-04 / FR-03</strong></td>
+<td>Empty item array is rejected; negative quantity is rejected; missing fulfill time is rejected. Database record count unchanged. ✅ Passed</td>
+</tr>
+<tr>
+<td><strong>T-05 / FR-04</strong></td>
+<td>All 6 valid status values are accepted by the status transition endpoint. Invalid status name is rejected. ✅ Passed</td>
+</tr>
+<tr>
+<td><strong>T-06 / FR-04</strong></td>
+<td>Chef notes update is accepted on completed orders. Customer feedback (1–5 stars) is accepted; rating above 5 is rejected. ✅ Passed</td>
+</tr>
+<tr>
+<td><strong>T-07 / FR-02</strong></td>
+<td>Valid menu item schema is accepted; negative price is rejected; item name shorter than 2 characters is rejected. ✅ Passed</td>
+</tr>
+<tr>
+<td><strong>T-08 / FR-03</strong></td>
+<td>Server-side total calculation produces accurate result: 2× ৳450 + 1× ৳1,450 + ৳50 packaging = ৳2,400. Historical snapshot preserves item name and unit price correctly. ✅ Passed</td>
+</tr>
+<tr>
+<td><strong>T-09 / NFR-05</strong></td>
+<td>All required deliverable files exist: <code>database.sql</code>, <code>schema.sql</code>, <code>schema.prisma</code>, <code>README.md</code>, <code>DEMO_PRESENTATION.md</code>, and 6 screenshots. ✅ Passed</td>
+</tr>
+</tbody>
+</table>
+<h2>Test Evidence Summary</h2>
+<p><strong>Test suite</strong>: <code>npm test</code> runs <code>scripts/verify-all.js</code> — a comprehensive verification suite covering order validation, status transitions, menu validation, authentication, server-side totals, snapshot fidelity, and deliverables verification.</p>
+<p><strong>Result</strong>: <strong>34 tests passed, 0 failed.</strong></p>
+<h2>Definition of Done for a Feature</h2>
+<p>Code is committed to <code>main</code>, the production build (<code>vue-tsc &amp;&amp; vite build</code> for client, <code>tsc</code> for server) completes with zero errors, all 34 tests pass, validation and permission checks are in place, and the README documents the implemented behavior.</p>
+<hr />
+<p><strong>Page 10 of 10</strong></p>
+<h1>09 | EXECUTION PLAN, RISKS &amp; HANDOVER</h1>
+<p><em>Turn the document into a realistic implementation record.</em></p>
+<h2>Implementation Sequence (Completed)</h2>
+<table>
+<thead>
+<tr>
+<th>Milestone</th>
+<th>Deliverable</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M1 — Foundation</strong></td>
+<td>Repository setup, Neon PostgreSQL schema, Prisma ORM, authentication with bcrypt + sessions, role-based middleware</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td><strong>M2 — Menu &amp; Storefront</strong></td>
+<td>Menu CRUD for admin, artisan menu cards with categories and BDT pricing, local image assets</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td><strong>M3 — Order Workflow</strong></td>
+<td>Pre-order cart and scheduling form, server-side total calculation, transactional order creation with price snapshots</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td><strong>M4 — Kitchen Board</strong></td>
+<td>Daily Kanban prep board with 5 status columns, 1-click stage transitions, date/status filters, and search</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td><strong>M5 — Analytics &amp; Polish</strong></td>
+<td>Kitchen dashboard metrics, customer feedback system, printable tickets, responsive design, dual-mode fallback</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td><strong>M6 — Quality &amp; Delivery</strong></td>
+<td>Test suite (34 tests), README, demo presentation, screenshots, BDT currency normalization, GitHub deployment</td>
+<td>✅ Done</td>
+</tr>
+</tbody>
+</table>
+<h2>Risks Encountered and Mitigations</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation Applied</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scope creep</strong></td>
+<td>Deferred payment gateway, delivery maps, and SMS notifications. Focused on core preparation workflow.</td>
+</tr>
+<tr>
+<td><strong>Remote database unavailability</strong></td>
+<td>Implemented dual-mode architecture: server-side fallback menu items + client-side localStorage mock engine ensure the app always works.</td>
+</tr>
+<tr>
+<td><strong>Stale cached pricing</strong></td>
+<td>Built automatic client-side cache migration with version tracking (<code>CURRENT_DATA_VERSION</code>) and name-based price sanitization. Any cached USD values are auto-converted to BDT on page load.</td>
+</tr>
+<tr>
+<td><strong>CDN image failures</strong></td>
+<td>Bundled all dish and banner images locally in <code>client/public/images/</code> to eliminate third-party dependency.</td>
+</tr>
+<tr>
+<td><strong>Historical receipt corruption</strong></td>
+<td><code>OrderItem</code> captures <code>itemNameSnapshot</code> and <code>unitPrice</code> at time of sale, decoupling receipts from future menu changes.</td>
+</tr>
+</tbody>
+</table>
+<h2>Technology Stack Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td>Vue 3 (Composition API) + TypeScript + Vite</td>
+<td>3.5 / 5.7 / 6.1</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td>Tailwind CSS + Lucide Icons</td>
+<td>3.4 / 0.475</td>
+</tr>
+<tr>
+<td>State</td>
+<td>Pinia + Vue Router</td>
+<td>3.0 / 4.5</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>Node.js + Express + TypeScript</td>
+<td>4.21 / 5.7</td>
+</tr>
+<tr>
+<td>ORM</td>
+<td>Prisma</td>
+<td>6.4</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>Neon Serverless PostgreSQL</td>
+<td>Cloud</td>
+</tr>
+<tr>
+<td>Validation</td>
+<td>Zod</td>
+<td>3.24</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>bcryptjs + express-session</td>
+<td>3.0 / 1.18</td>
+</tr>
+</tbody>
+</table>
+<h2>Demo Credentials</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Email</th>
+<th>Password</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🍳 Kitchen Admin</td>
+<td>Chef Sarah Jenkins</td>
+<td><code>chef@homechef.local</code></td>
+<td><code>password123</code></td>
+</tr>
+<tr>
+<td>🥐 Customer 1</td>
+<td>David Miller</td>
+<td><code>david.miller@gmail.com</code></td>
+<td><code>password123</code></td>
+</tr>
+<tr>
+<td>🥐 Customer 2</td>
+<td>Elena Rostova</td>
+<td><code>elena.rostova@outlook.com</code></td>
+<td><code>password123</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Submission Package</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source code repository</td>
+<td><a href="https://github.com/Kamruzzaman2200/HomeChef-Board">github.com/Kamruzzaman2200/HomeChef-Board</a></td>
+</tr>
+<tr>
+<td>Database schema export</td>
+<td><code>/database.sql</code> and <code>/server/prisma/schema.sql</code></td>
+</tr>
+<tr>
+<td>Prisma schema</td>
+<td><code>/server/prisma/schema.prisma</code></td>
+</tr>
+<tr>
+<td>README with setup instructions</td>
+<td><code>/README.md</code></td>
+</tr>
+<tr>
+<td>Demo presentation guide</td>
+<td><code>/DEMO_PRESENTATION.md</code></td>
+</tr>
+<tr>
+<td>PRD document</td>
+<td><code>/docs/HomeChef_Board_PRD_v1.0.md</code></td>
+</tr>
+<tr>
+<td>Screenshots (6)</td>
+<td><code>/docs/screenshots/01-login-screen.png</code> through <code>06-order-details-ticket.png</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Submission Filename</h2>
+<p><code>HomeChef_Board_Kamruzzaman_PRD_v1.0.pdf</code></p>
+<p>Repository: <code>/docs/HomeChef_Board_PRD_v1.0.md</code>, <code>/docs/screenshots/</code>, <code>README.md</code>, and <code>DEMO_PRESENTATION.md</code>.</p>
+<p>Submit via GitHub and share the link through the internship WhatsApp channel.</p>
+</body>
+</html>
